@@ -1,0 +1,679 @@
+package repository
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"sync"
+	"time"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
+	"github.com/maynardzanzibar/internal/model"
+)
+
+// ZanzibarPermissionRepository handles Zanzibar-style tuple-based permissions
+type ZanzibarPermissionRepository struct {
+	db    *gorm.DB
+	cache *sync.Map // Simple LRU cache for permission checks
+}
+
+// NewZanzibarPermissionRepository creates a new Zanzibar permission repository
+func NewZanzibarPermissionRepository(db *gorm.DB) *ZanzibarPermissionRepository {
+	return &ZanzibarPermissionRepository{
+		db:    db,
+		cache: &sync.Map{},
+	}
+}
+
+// CheckPermission checks if a user has permission to access a document using graph traversal
+func (r *ZanzibarPermissionRepository) CheckPermission(ctx context.Context, userID, documentID, permissionType string) (*model.PermissionCheckResult, error) {
+	startTime := time.Now()
+
+	// Check cache first
+	cacheKey := fmt.Sprintf("%s:%s:%s", userID, documentID, permissionType)
+	if cached, ok := r.cache.Load(cacheKey); ok {
+		result := cached.(*model.PermissionCheckResult)
+		result.CacheHit = true
+		return result, nil
+	}
+
+	// Start permission resolution through graph traversal
+	sources := make(model.PermissionSourceList, 0)
+
+	// Path 1: Direct permission
+	hasDirect, err := r.checkDirectPermission(ctx, userID, documentID, permissionType, &sources)
+	if err != nil {
+		return nil, err
+	}
+	if hasDirect {
+		result := &model.PermissionCheckResult{
+			HasPermission: true,
+			PermissionType: permissionType,
+			Sources:        sourcesToStrings(sources),
+			DurationMs:     float64(time.Since(startTime).Milliseconds()),
+			CacheHit:       false,
+		}
+		r.cache.Store(cacheKey, result)
+		return result, nil
+	}
+
+	// Path 2: Customer follower permission
+	hasCustomer, err := r.checkCustomerFollowerPermission(ctx, userID, documentID, permissionType, &sources)
+	if err != nil {
+		return nil, err
+	}
+	if hasCustomer {
+		result := &model.PermissionCheckResult{
+			HasPermission: true,
+			PermissionType: permissionType,
+			Sources:        sourcesToStrings(sources),
+			DurationMs:     float64(time.Since(startTime).Milliseconds()),
+			CacheHit:       false,
+		}
+		r.cache.Store(cacheKey, result)
+		return result, nil
+	}
+
+	// Path 3: Manager chain permission (recursive)
+	hasManager, err := r.checkManagerChainPermission(ctx, userID, documentID, permissionType, &sources)
+	if err != nil {
+		return nil, err
+	}
+	if hasManager {
+		result := &model.PermissionCheckResult{
+			HasPermission: true,
+			PermissionType: permissionType,
+			Sources:        sourcesToStrings(sources),
+			DurationMs:     float64(time.Since(startTime).Milliseconds()),
+			CacheHit:       false,
+		}
+		r.cache.Store(cacheKey, result)
+		return result, nil
+	}
+
+	// Path 4: Superuser permission
+	hasSuperuser, err := r.checkSuperuserPermission(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if hasSuperuser {
+		sources.Add("superuser", "system:root")
+		result := &model.PermissionCheckResult{
+			HasPermission: true,
+			PermissionType: permissionType,
+			Sources:        sourcesToStrings(sources),
+			DurationMs:     float64(time.Since(startTime).Milliseconds()),
+			CacheHit:       false,
+		}
+		r.cache.Store(cacheKey, result)
+		return result, nil
+	}
+
+	// No permission found
+	result := &model.PermissionCheckResult{
+		HasPermission: false,
+		DurationMs:    float64(time.Since(startTime).Milliseconds()),
+		CacheHit:      false,
+	}
+	r.cache.Store(cacheKey, result)
+	return result, nil
+}
+
+// checkDirectPermission checks if user has direct permission on document
+func (r *ZanzibarPermissionRepository) checkDirectPermission(ctx context.Context, userID, documentID, permissionType string, sources *model.PermissionSourceList) (bool, error) {
+	var tuple model.RelationTuple
+	err := r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"document", documentID, permissionType, "user", userID).
+		First(&tuple).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	sources.Add("direct", documentID)
+	return true, nil
+}
+
+// checkCustomerFollowerPermission checks if user has permission through customer follower relationship
+func (r *ZanzibarPermissionRepository) checkCustomerFollowerPermission(ctx context.Context, userID, documentID, permissionType string, sources *model.PermissionSourceList) (bool, error) {
+	// Step 1: Find which customer owns this document
+	var ownerTuple model.RelationTuple
+	err := r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ?", "document", documentID, "owner_customer").
+		First(&ownerTuple).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	customerID := ownerTuple.SubjectID
+
+	// Step 2: Check if user is a follower of this customer
+	var followerTuple model.RelationTuple
+	err = r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"customer", customerID, "follower", "user", userID).
+		First(&followerTuple).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	sources.Add("customer_follower", customerID)
+	return true, nil
+}
+
+// checkManagerChainPermission recursively checks if user has permission through manager chain
+func (r *ZanzibarPermissionRepository) checkManagerChainPermission(ctx context.Context, userID, documentID, permissionType string, sources *model.PermissionSourceList) (bool, error) {
+	// Find who has direct permission on this document
+	var tuples []model.RelationTuple
+	err := r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ?", "document", documentID, permissionType).
+		Find(&tuples).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	// For each user with permission, check if current user is their manager
+	for _, tuple := range tuples {
+		if tuple.SubjectNamespace != "user" {
+			continue
+		}
+
+		// Check if current user is in the management chain of this user
+		isManager, err := r.isInManagementChain(ctx, userID, tuple.SubjectID, make(map[string]bool), 0, 5)
+		if err != nil {
+			return false, err
+		}
+
+		if isManager {
+			sources.Add("manager_chain", tuple.SubjectID)
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// isInManagementChain checks if managerUserID is in the management chain of subordinateUserID
+// Uses depth-limited recursion to prevent infinite loops
+func (r *ZanzibarPermissionRepository) isInManagementChain(ctx context.Context, managerUserID, subordinateUserID string, visited map[string]bool, currentDepth, maxDepth int) (bool, error) {
+	if currentDepth > maxDepth {
+		return false, nil
+	}
+
+	// Prevent cycles
+	if visited[subordinateUserID] {
+		return false, nil
+	}
+	visited[subordinateUserID] = true
+
+	// Base case: if subordinateUserID == managerUserID, we found it
+	if subordinateUserID == managerUserID {
+		return true, nil
+	}
+
+	// Find all managers for this user
+	var managerRelations []model.ManagementRelation
+	err := r.db.WithContext(ctx).
+		Joins("JOIN user_departments ON user_departments.department_id = management_relations.department_id").
+		Where("management_relations.subordinate_user_id = ? AND user_departments.user_id = ?", subordinateUserID, subordinateUserID).
+		Find(&managerRelations).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	// For each manager, recursively check if they're in the chain
+	for _, rel := range managerRelations {
+		isInChain, err := r.isInManagementChain(ctx, managerUserID, rel.ManagerUserID, visited, currentDepth+1, maxDepth)
+		if err != nil {
+			return false, err
+		}
+
+		if isInChain {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// checkSuperuserPermission checks if user is a superuser
+func (r *ZanzibarPermissionRepository) checkSuperuserPermission(ctx context.Context, userID string) (bool, error) {
+	var tuple model.RelationTuple
+	err := r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"system", "root", "admin", "user", userID).
+		First(&tuple).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
+
+// CheckPermissionsBatch checks permissions for multiple documents
+func (r *ZanzibarPermissionRepository) CheckPermissionsBatch(ctx context.Context, userID string, documentIDs []string, permissionType string) (map[string]bool, error) {
+	result := make(map[string]bool)
+
+	for _, docID := range documentIDs {
+		checkResult, err := r.CheckPermission(ctx, userID, docID, permissionType)
+		if err != nil {
+			return nil, err
+		}
+		result[docID] = checkResult.HasPermission
+	}
+
+	return result, nil
+}
+
+// GetUserDocuments returns paginated list of documents user can access
+// This is more complex for Zanzibar as we need to traverse the graph
+func (r *ZanzibarPermissionRepository) GetUserDocuments(ctx context.Context, userID string, permissionType string, page, pageSize int) (*model.UserDocumentList, error) {
+	startTime := time.Now()
+	offset := (page - 1) * pageSize
+
+	// Strategy: Expand user's identity first, then query documents
+	// 1. Direct document permissions
+	// 2. Customer follower permissions
+	// 3. Manager chain permissions (subordinates' documents)
+
+	var documentIDs []string
+
+	// Path 1: Direct permissions
+	var directTuples []model.RelationTuple
+	r.db.WithContext(ctx).
+		Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"document", permissionType, "user", userID).
+		Pluck("object_id", &documentIDs)
+
+	// Path 2: Customer follower permissions
+	var customerIDs []string
+	r.db.WithContext(ctx).
+		Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"customer", "follower", "user", userID).
+		Pluck("object_id", &customerIDs)
+
+	if len(customerIDs) > 0 {
+		var customerDocIDs []string
+		r.db.WithContext(ctx).
+			Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id IN ?",
+				"document", "owner_customer", "customer", customerIDs).
+			Pluck("object_id", &customerDocIDs)
+		documentIDs = append(documentIDs, customerDocIDs...)
+	}
+
+	// Path 3: Manager chain permissions (subordinates who created documents)
+	// Find all subordinates
+	subordinateIDs, err := r.getAllSubordinates(ctx, userID, make(map[string]bool), 0, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(subordinateIDs) > 0 {
+		var managerDocIDs []string
+		r.db.WithContext(ctx).
+			Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id IN ?",
+				"document", permissionType, "user", subordinateIDs).
+			Pluck("object_id", &managerDocIDs)
+		documentIDs = append(documentIDs, managerDocIDs...)
+	}
+
+	// Deduplicate
+	uniqueDocIDs := make([]string, 0, len(documentIDs))
+	seen := make(map[string]bool)
+	for _, id := range documentIDs {
+		if !seen[id] {
+			seen[id] = true
+			uniqueDocIDs = append(uniqueDocIDs, id)
+		}
+	}
+
+	total := int64(len(uniqueDocIDs))
+
+	// Fetch documents with pagination
+	var documents []model.Document
+	err = r.db.WithContext(ctx).
+		Where("id IN ?", uniqueDocIDs).
+		Preload("Customer").
+		Preload("Creator").
+		Order("created_at DESC").
+		Limit(pageSize).
+		Offset(offset).
+		Find(&documents).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user documents: %w", err)
+	}
+
+	// Convert to document list items
+	documentItems := make([]model.DocumentListItem, 0, len(documents))
+	for _, doc := range documents {
+		// Determine permission source
+		var sourceType string
+		if r.hasDirectPermission(ctx, userID, doc.ID, permissionType) {
+			sourceType = "direct"
+		} else if r.hasCustomerPermission(ctx, userID, doc.ID, permissionType) {
+			sourceType = "customer_follower"
+		} else {
+			sourceType = "manager_chain"
+		}
+
+		docItem := model.DocumentListItem{
+			ID:             doc.ID,
+			Title:          doc.Title,
+			CustomerID:     doc.CustomerID,
+			CreatorID:      doc.CreatorID,
+			PermissionType: permissionType,
+			SourceType:     sourceType,
+			CreatedAt:      doc.CreatedAt,
+		}
+
+		if doc.Customer != nil {
+			docItem.CustomerName = doc.Customer.Name
+		}
+		if doc.Creator != nil {
+			docItem.CreatorName = doc.Creator.Name
+		}
+
+		documentItems = append(documentItems, docItem)
+	}
+
+	duration := time.Since(startTime).Milliseconds()
+
+	return &model.UserDocumentList{
+		Documents: documentItems,
+		Total:     total,
+		Page:      page,
+		PageSize:  pageSize,
+		DurationMs: float64(duration),
+	}, nil
+}
+
+// getAllSubordinates recursively gets all subordinates of a manager
+func (r *ZanzibarPermissionRepository) getAllSubordinates(ctx context.Context, managerUserID string, visited map[string]bool, currentDepth, maxDepth int) ([]string, error) {
+	if currentDepth > maxDepth {
+		return []string{}, nil
+	}
+
+	var subordinateIDs []string
+
+	var managerRelations []model.ManagementRelation
+	err := r.db.WithContext(ctx).
+		Where("manager_user_id = ?", managerUserID).
+		Find(&managerRelations).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rel := range managerRelations {
+		subordinateID := rel.SubordinateUserID
+
+		if !visited[subordinateID] {
+			visited[subordinateID] = true
+			subordinateIDs = append(subordinateIDs, subordinateID)
+
+			// Recursively get subordinates' subordinates
+			nestedSubordinates, err := r.getAllSubordinates(ctx, subordinateID, visited, currentDepth+1, maxDepth)
+			if err != nil {
+				return nil, err
+			}
+			subordinateIDs = append(subordinateIDs, nestedSubordinates...)
+		}
+	}
+
+	return subordinateIDs, nil
+}
+
+// hasDirectPermission helper for GetUserDocuments
+func (r *ZanzibarPermissionRepository) hasDirectPermission(ctx context.Context, userID, documentID, permissionType string) bool {
+	var tuple model.RelationTuple
+	err := r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"document", documentID, permissionType, "user", userID).
+		First(&tuple).Error
+	return err == nil
+}
+
+// hasCustomerPermission helper for GetUserDocuments
+func (r *ZanzibarPermissionRepository) hasCustomerPermission(ctx context.Context, userID, documentID, permissionType string) bool {
+	var ownerTuple model.RelationTuple
+	err := r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ?", "document", documentID, "owner_customer").
+		First(&ownerTuple).Error
+	if err != nil {
+		return false
+	}
+
+	var followerTuple model.RelationTuple
+	err = r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"customer", ownerTuple.SubjectID, "follower", "user", userID).
+		First(&followerTuple).Error
+	return err == nil
+}
+
+// GrantDirectPermission grants direct permission using tuple
+func (r *ZanzibarPermissionRepository) GrantDirectPermission(ctx context.Context, userID, documentID, permissionType string) error {
+	tuple := &model.RelationTuple{
+		Namespace:        "document",
+		ObjectID:         documentID,
+		Relation:         permissionType,
+		SubjectNamespace: "user",
+		SubjectID:        userID,
+	}
+
+	// Clear cache
+	r.clearUserCache(userID)
+
+	return r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).
+		Create(tuple).Error
+}
+
+// RevokePermission revokes permission by deleting tuple
+func (r *ZanzibarPermissionRepository) RevokePermission(ctx context.Context, userID, documentID string) error {
+	// Clear cache
+	r.clearUserCache(userID)
+
+	return r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND subject_namespace = ? AND subject_id = ?",
+			"document", documentID, "user", userID).
+		Delete(&model.RelationTuple{}).Error
+}
+
+// AddCustomerFollower adds a follower tuple to customer
+func (r *ZanzibarPermissionRepository) AddCustomerFollower(ctx context.Context, customerID, userID string) error {
+	tuple := &model.RelationTuple{
+		Namespace:        "customer",
+		ObjectID:         customerID,
+		Relation:         "follower",
+		SubjectNamespace: "user",
+		SubjectID:        userID,
+	}
+
+	// Clear cache for this user
+	r.clearUserCache(userID)
+
+	return r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).
+		Create(tuple).Error
+}
+
+// RemoveCustomerFollower removes a follower from customer
+func (r *ZanzibarPermissionRepository) RemoveCustomerFollower(ctx context.Context, customerID, userID string) error {
+	// Clear cache for this user
+	r.clearUserCache(userID)
+
+	return r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"customer", customerID, "follower", "user", userID).
+		Delete(&model.RelationTuple{}).Error
+}
+
+// UpdateDepartmentManager updates department manager - SINGLE TUPLE UPDATE!
+func (r *ZanzibarPermissionRepository) UpdateDepartmentManager(ctx context.Context, departmentID, newManagerID string) error {
+	// Delete old manager tuple
+	r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ?", "department", departmentID, "manager").
+		Delete(&model.RelationTuple{})
+
+	// Add new manager tuple
+	tuple := &model.RelationTuple{
+		Namespace:        "department",
+		ObjectID:         departmentID,
+		Relation:         "manager",
+		SubjectNamespace: "user",
+		SubjectID:        newManagerID,
+	}
+
+	// Clear ALL caches - cheap operation
+	r.cache = &sync.Map{}
+
+	return r.db.WithContext(ctx).Create(tuple).Error
+}
+
+// AddUserToDepartment adds user to department
+func (r *ZanzibarPermissionRepository) AddUserToDepartment(ctx context.Context, userID, departmentID, role string, isPrimary bool) error {
+	// Add to user_departments table
+	userDept := &model.UserDepartment{
+		UserID:       userID,
+		DepartmentID: departmentID,
+		Role:         role,
+		IsPrimary:    isPrimary,
+	}
+
+	if err := r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).
+		Create(userDept).Error; err != nil {
+		return err
+	}
+
+	// Add membership tuple
+	tuple := &model.RelationTuple{
+		Namespace:        "department",
+		ObjectID:         departmentID,
+		Relation:         "member",
+		SubjectNamespace: "user",
+		SubjectID:        userID,
+	}
+
+	// Clear cache for this user
+	r.clearUserCache(userID)
+
+	return r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).
+		Create(tuple).Error
+}
+
+// RemoveUserFromDepartment removes user from department
+func (r *ZanzibarPermissionRepository) RemoveUserFromDepartment(ctx context.Context, userID, departmentID string) error {
+	// Delete from user_departments table
+	if err := r.db.WithContext(ctx).
+		Where("user_id = ? AND department_id = ?", userID, departmentID).
+		Delete(&model.UserDepartment{}).Error; err != nil {
+		return err
+	}
+
+	// Delete membership tuple
+	// Clear cache for this user
+	r.clearUserCache(userID)
+
+	return r.db.WithContext(ctx).
+		Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"department", departmentID, "member", "user", userID).
+		Delete(&model.RelationTuple{}).Error
+}
+
+// GetStorageStats returns storage statistics for Zanzibar tuples
+func (r *ZanzibarPermissionRepository) GetStorageStats(ctx context.Context) (*model.StorageStats, error) {
+	var stats model.StorageStats
+
+	err := r.db.WithContext(ctx).
+		Raw(`
+			SELECT
+				'Zanzibar' as engine_type,
+				'relation_tuples' as table_name,
+				TABLE_ROWS as row_count,
+				ROUND(DATA_LENGTH / 1024 / 1024, 2) as data_size_mb,
+				ROUND(INDEX_LENGTH / 1024 / 1024, 2) as index_size_mb,
+				ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) as total_size_mb
+			FROM information_schema.TABLES
+			WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'relation_tuples'
+		`).
+		Scan(&stats).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get storage stats: %w", err)
+	}
+
+	return &stats, nil
+}
+
+// GetTupleStats returns tuple statistics by namespace and relation
+func (r *ZanzibarPermissionRepository) GetTupleStats(ctx context.Context) ([]map[string]interface{}, error) {
+	var results []map[string]interface{}
+
+	err := r.db.WithContext(ctx).
+		Model(&model.RelationTuple{}).
+		Select("namespace, relation, COUNT(*) as total_tuples, COUNT(DISTINCT object_id) as unique_objects, COUNT(DISTINCT subject_id) as unique_subjects").
+		Group("namespace, relation").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tuple stats: %w", err)
+	}
+
+	return results, nil
+}
+
+// clearUserCache clears all cache entries for a specific user
+func (r *ZanzibarPermissionRepository) clearUserCache(userID string) {
+	r.cache.Range(func(key, value interface{}) bool {
+		if strings.Contains(key.(string), userID+":") {
+			r.cache.Delete(key)
+		}
+		return true
+	})
+}
+
+// sourcesToStrings converts PermissionSourceList to []string
+func sourcesToStrings(sources model.PermissionSourceList) []string {
+	result := make([]string, len(sources))
+	for i, source := range sources {
+		result[i] = fmt.Sprintf("%s:%s", source.Type, source.SourceID)
+	}
+	return result
+}
+
+// ClearCache clears the entire permission cache
+func (r *ZanzibarPermissionRepository) ClearCache() {
+	r.cache = &sync.Map{}
+}
