@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/maynardzanzibar/internal/api/handler"
+	"github.com/d60-Lab/gin-template/internal/api/handler"
 )
 
 // SetupPermissionRoutes sets up all permission-related routes

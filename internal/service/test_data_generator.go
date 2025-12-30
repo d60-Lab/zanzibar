@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 
-	"github.com/maynardzanzibar/internal/model"
+	"github.com/d60-Lab/gin-template/internal/model"
 )
 
 // TestDataGenerator generates realistic test data for permission comparison
@@ -104,6 +105,12 @@ func (g *TestDataGenerator) GenerateAll(ctx context.Context, config GenerateConf
 		return fmt.Errorf("failed to generate superusers: %w", err)
 	}
 
+	// Phase 9: Generate document read status
+	fmt.Println("\n📖 Phase 9: Generating document read status...")
+	if err := g.generateDocumentReads(ctx); err != nil {
+		return fmt.Errorf("failed to generate document reads: %w", err)
+	}
+
 	duration := time.Since(startTime)
 	fmt.Printf("\n✅ Test data generation completed in %v\n", duration)
 
@@ -159,19 +166,20 @@ func (g *TestDataGenerator) generateDepartmentHierarchy(ctx context.Context, con
 				departments = append(departments, level3)
 
 				// Level 4: Teams under each department (smaller portion)
+				var level4 *model.Department
 				if g.r.Float64() < 0.3 && deptCount < config.NumDepartments {
 					deptCount++
-					level4 := model.Department{
+					level4 = &model.Department{
 						ID:       fmt.Sprintf("dept-l4-%d-%d-%d-1", i, j, k),
 						Name:     fmt.Sprintf("Team %c%d-%d-1", 'A'+i, j+1, k+1),
 						ParentID: &level3.ID,
 						Level:    4,
 					}
-					departments = append(departments, level4)
+					departments = append(departments, *level4)
 				}
 
 				// Level 5: Sub-teams (even smaller portion)
-				if g.r.Float64() < 0.1 && deptCount < config.NumDepartments {
+				if g.r.Float64() < 0.1 && deptCount < config.NumDepartments && level4 != nil {
 					deptCount++
 					level5 := model.Department{
 						ID:       fmt.Sprintf("dept-l5-%d-%d-%d-1-1", i, j, k),
@@ -218,10 +226,25 @@ func (g *TestDataGenerator) generateUsers(ctx context.Context, config GenerateCo
 		// Assign to departments (realistic distribution)
 		numDepartments := g.getNumDepartmentsForUser()
 		userDeptIDs := make([]string, 0, numDepartments)
+		assignedDepts := make(map[string]bool) // Track assigned departments to avoid duplicates
 
 		for d := 0; d < numDepartments; d++ {
-			// Pick random department
-			dept := departments[g.r.Intn(len(departments))]
+			// Pick random department (avoid duplicates)
+			var dept model.Department
+			var attempts int
+			for attempts = 0; attempts < 100; attempts++ {
+				dept = departments[g.r.Intn(len(departments))]
+				if !assignedDepts[dept.ID] {
+					assignedDepts[dept.ID] = true
+					break
+				}
+			}
+
+			if attempts >= 100 {
+				// Couldn't find unique department, skip this assignment
+				continue
+			}
+
 			userDeptIDs = append(userDeptIDs, dept.ID)
 
 			userDepts = append(userDepts, model.UserDepartment{
@@ -232,7 +255,9 @@ func (g *TestDataGenerator) generateUsers(ctx context.Context, config GenerateCo
 			})
 		}
 
-		users[i].PrimaryDepartmentID = &userDeptIDs[0]
+		if len(userDeptIDs) > 0 {
+			users[i].PrimaryDepartmentID = &userDeptIDs[0]
+		}
 
 		// Randomly assign as superuser (1% of users)
 		if i < 10 {
@@ -278,35 +303,39 @@ func (g *TestDataGenerator) getRandomRole() string {
 func (g *TestDataGenerator) generateManagementRelations(ctx context.Context) error {
 	fmt.Println("   Building management relations...")
 
-	// Get all departments
+	// Get all departments (except level 5 which are sub-teams)
 	var departments []model.Department
 	if err := g.db.WithContext(ctx).Where("level < ?", 5).Find(&departments).Error; err != nil {
 		return err
 	}
 
-	// Get all users
-	var users []model.User
-	if err := g.db.WithContext(ctx).Find(&users).Error; err != nil {
+	// Build department map for parent lookups
+	deptMap := make(map[string]*model.Department)
+	for i := range departments {
+		deptMap[departments[i].ID] = &departments[i]
+	}
+
+	// Get ALL user-department relationships in ONE query
+	var allUserDepts []model.UserDepartment
+	if err := g.db.WithContext(ctx).Find(&allUserDepts).Error; err != nil {
 		return err
 	}
 
-	userMap := make(map[string]*model.User)
-	for i := range users {
-		userMap[users[i].ID] = &users[i]
+	// Group user-departments by department ID
+	deptUserMap := make(map[string][]model.UserDepartment)
+	for _, ud := range allUserDepts {
+		deptUserMap[ud.DepartmentID] = append(deptUserMap[ud.DepartmentID], ud)
 	}
 
-	managementRelations := make([]model.ManagementRelation, 0)
+	// Use a map to deduplicate management relations
+	// Key: "managerID|subordinateID|departmentID" (using | as delimiter since IDs contain -)
+	// Value: the lowest management level for this relation
+	relationsMap := make(map[string]int) // key -> min level
+	deptManagerUpdates := make(map[string]string) // dept ID -> manager ID
 
-	// Assign managers to departments
+	// Assign managers to departments and build relations
 	for _, dept := range departments {
-		// Find users in this department
-		var userDepts []model.UserDepartment
-		if err := g.db.WithContext(ctx).
-			Where("department_id = ?", dept.ID).
-			Find(&userDepts).Error; err != nil {
-			return err
-		}
-
+		userDepts := deptUserMap[dept.ID]
 		if len(userDepts) == 0 {
 			continue
 		}
@@ -314,60 +343,86 @@ func (g *TestDataGenerator) generateManagementRelations(ctx context.Context) err
 		// Pick a manager from this department's users
 		managerUserDept := userDepts[g.r.Intn(len(userDepts))]
 		managerID := managerUserDept.UserID
-
-		// Update department with manager
-		if err := g.db.WithContext(ctx).
-			Model(&model.Department{}).
-			Where("id = ?", dept.ID).
-			Update("manager_id", managerID).Error; err != nil {
-			return err
-		}
+		deptManagerUpdates[dept.ID] = managerID
 
 		// Create management relations for all non-manager users
 		for _, ud := range userDepts {
 			if ud.UserID != managerID {
-				// Calculate management level (1 for direct manager)
-				level := 1
-				managementRelations = append(managementRelations, model.ManagementRelation{
-					ManagerUserID:     managerID,
-					SubordinateUserID: ud.UserID,
-					DepartmentID:      dept.ID,
-					ManagementLevel:   level,
-				})
+				// Direct manager relation (level 1)
+				key := fmt.Sprintf("%s|%s|%s", managerID, ud.UserID, dept.ID)
+				if currentLevel, exists := relationsMap[key]; !exists || currentLevel > 1 {
+					relationsMap[key] = 1
+				}
 
-				// Add higher-level management relations (2-5 levels up)
-				// This represents the manager chain
+				// Build manager chain (levels 2-5) using deptMap
 				currentDept := &dept
 				currentLevel := 2
 
 				for currentLevel <= 5 && currentDept.ParentID != nil {
-					// Find parent department
-					var parentDept model.Department
-					if err := g.db.WithContext(ctx).
-						Where("id = ?", *currentDept.ParentID).
-						First(&parentDept).Error; err != nil {
+					parentDept, exists := deptMap[*currentDept.ParentID]
+					if !exists {
 						break
 					}
 
-					if parentDept.ManagerID != nil {
-						managementRelations = append(managementRelations, model.ManagementRelation{
-							ManagerUserID:     *parentDept.ManagerID,
-							SubordinateUserID: ud.UserID,
-							DepartmentID:      dept.ID,
-							ManagementLevel:   currentLevel,
-						})
+					// Get parent's manager if assigned
+					if parentManagerID, hasManager := deptManagerUpdates[parentDept.ID]; hasManager {
+						key := fmt.Sprintf("%s|%s|%s", parentManagerID, ud.UserID, dept.ID)
+						if existingLevel, exists := relationsMap[key]; !exists || existingLevel > currentLevel {
+							relationsMap[key] = currentLevel
+						}
 					}
 
-					currentDept = &parentDept
+					currentDept = parentDept
 					currentLevel++
 				}
 			}
 		}
 	}
 
-	// Batch insert management relations
-	if err := g.db.WithContext(ctx).CreateInBatches(managementRelations, 1000).Error; err != nil {
-		return err
+	// Convert map to slice
+	managementRelations := make([]model.ManagementRelation, 0, len(relationsMap))
+	for key, level := range relationsMap {
+		// Parse key "managerID|subordinateID|departmentID"
+		parts := strings.Split(key, "|")
+		if len(parts) != 3 {
+			continue // Skip malformed keys
+		}
+
+		managementRelations = append(managementRelations, model.ManagementRelation{
+			ManagerUserID:     parts[0],
+			SubordinateUserID: parts[1],
+			DepartmentID:      parts[2],
+			ManagementLevel:   level,
+		})
+	}
+
+	// Batch update all department managers in ONE query
+	if len(deptManagerUpdates) > 0 {
+		sql := "UPDATE departments SET manager_id = CASE id "
+		for deptID, managerID := range deptManagerUpdates {
+			sql += fmt.Sprintf(" WHEN '%s' THEN '%s'", deptID, managerID)
+		}
+		sql += " END WHERE id IN ("
+		first := true
+		for deptID := range deptManagerUpdates {
+			if !first {
+				sql += ","
+			}
+			sql += fmt.Sprintf("'%s'", deptID)
+			first = false
+		}
+		sql += ")"
+
+		if err := g.db.WithContext(ctx).Exec(sql).Error; err != nil {
+			return fmt.Errorf("failed to update department managers: %w", err)
+		}
+	}
+
+	// Batch insert all management relations
+	if len(managementRelations) > 0 {
+		if err := g.db.WithContext(ctx).CreateInBatches(managementRelations, 1000).Error; err != nil {
+			return err
+		}
 	}
 
 	fmt.Printf("   ✅ Created %d management relations\n", len(managementRelations))
@@ -430,11 +485,52 @@ func (g *TestDataGenerator) generateDocuments(ctx context.Context, config Genera
 		}
 	}
 
-	// Assign customer followers (1-10 per customer)
-	for _, customer := range customers {
-		numFollowers := g.r.Intn(config.MaxCustomerFollowers) + 1
+	// Assign customer followers using Zipfian distribution
+	// This simulates real-world scenario:
+	// - 10% large customers: 50-100 followers
+	// - 30% medium customers: 10-30 followers
+	// - 60% small customers: 1-5 followers
+	// Global map to track all (customer_id, user_id) pairs to prevent duplicates
+	customerFollowerKeys := make(map[string]bool)
+
+	for idx, customer := range customers {
+		var numFollowers int
+
+		// Zipfian distribution based on customer index
+		// Lower index = larger customer = more followers
+		percentile := float64(idx) / float64(len(customers))
+
+		if percentile < 0.1 {
+			// Top 10% large customers: 50-100 followers
+			numFollowers = 50 + g.r.Intn(51)
+		} else if percentile < 0.4 {
+			// Next 30% medium customers: 10-30 followers
+			numFollowers = 10 + g.r.Intn(21)
+		} else {
+			// Remaining 60% small customers: 1-5 followers
+			numFollowers = 1 + g.r.Intn(5)
+		}
+
 		for i := 0; i < numFollowers; i++ {
-			user := users[g.r.Intn(len(users))]
+			// Try to find a unique user for this customer
+			var attempts int
+			var user model.User
+			key := ""
+
+			for attempts = 0; attempts < 100; attempts++ {
+				user = users[g.r.Intn(len(users))]
+				key = fmt.Sprintf("%s|%s", customer.ID, user.ID)
+				if !customerFollowerKeys[key] {
+					customerFollowerKeys[key] = true
+					break
+				}
+			}
+
+			if attempts >= 100 {
+				// Couldn't find unique user, skip this assignment
+				continue
+			}
+
 			customerFollowers = append(customerFollowers, model.CustomerFollower{
 				CustomerID: customer.ID,
 				UserID:     user.ID,
@@ -474,26 +570,77 @@ func (g *TestDataGenerator) getNumDocsForCustomer(customerIndex, totalCustomers 
 	}
 }
 
-// generateMySQLPermissions builds expanded permission table (EXPENSIVE!)
+// generateMySQLPermissions builds expanded permission table (OPTIMIZED!)
+// Uses pre-loaded data to avoid N+1 queries
 func (g *TestDataGenerator) generateMySQLPermissions(ctx context.Context) error {
-	fmt.Println("   Building MySQL expanded permissions (this will take a while)...")
+	fmt.Println("   Building MySQL expanded permissions (optimized version)...")
 
 	startTime := time.Now()
 
-	// Get all documents
+	// Step 1: Pre-load ALL required data in bulk (avoid N+1 queries)
+	fmt.Println("   📥 Pre-loading data...")
+
+	// Load all documents
 	var documents []model.Document
 	if err := g.db.WithContext(ctx).Find(&documents).Error; err != nil {
 		return err
 	}
+	fmt.Printf("      - Loaded %d documents\n", len(documents))
 
-	permissions := make([]model.DocumentPermissionMySQL, 0, 10000000) // Pre-allocate for 10M
+	// Load all customer followers and build lookup map: customerID -> []userID
+	var allFollowers []model.CustomerFollower
+	if err := g.db.WithContext(ctx).Find(&allFollowers).Error; err != nil {
+		return err
+	}
+	customerFollowersMap := make(map[string][]string)
+	for _, f := range allFollowers {
+		customerFollowersMap[f.CustomerID] = append(customerFollowersMap[f.CustomerID], f.UserID)
+	}
+	fmt.Printf("      - Loaded %d customer followers\n", len(allFollowers))
+
+	// Load all management relations and build lookup map: subordinateUserID -> []managerUserID
+	var allManagers []model.ManagementRelation
+	if err := g.db.WithContext(ctx).Find(&allManagers).Error; err != nil {
+		return err
+	}
+	managerMap := make(map[string][]string)
+	for _, m := range allManagers {
+		managerMap[m.SubordinateUserID] = append(managerMap[m.SubordinateUserID], m.ManagerUserID)
+	}
+	fmt.Printf("      - Loaded %d management relations\n", len(allManagers))
+
+	// Load all superusers (once!)
+	var superusers []model.User
+	if err := g.db.WithContext(ctx).Where("is_superuser = ?", true).Find(&superusers).Error; err != nil {
+		return err
+	}
+	superuserIDs := make([]string, len(superusers))
+	for i, u := range superusers {
+		superuserIDs[i] = u.ID
+	}
+	fmt.Printf("      - Loaded %d superusers\n", len(superusers))
+
+	// Step 2: Generate permissions using in-memory lookups (FAST!)
+	fmt.Println("   🔄 Generating permissions...")
+
+	permissions := make([]model.DocumentPermissionMySQL, 0, 10000000)
+	permissionKeys := make(map[string]bool)
 	processedDocs := 0
+	totalPermissions := 0
+
+	addPermission := func(perm model.DocumentPermissionMySQL) {
+		key := fmt.Sprintf("%s|%s|%s", perm.UserID, perm.DocumentID, perm.PermissionType)
+		if !permissionKeys[key] {
+			permissionKeys[key] = true
+			permissions = append(permissions, perm)
+		}
+	}
 
 	for _, doc := range documents {
 		processedDocs++
 
 		// 1. Creator gets owner permission
-		permissions = append(permissions, model.DocumentPermissionMySQL{
+		addPermission(model.DocumentPermissionMySQL{
 			UserID:         doc.CreatorID,
 			DocumentID:     doc.ID,
 			PermissionType: "owner",
@@ -502,7 +649,7 @@ func (g *TestDataGenerator) generateMySQLPermissions(ctx context.Context) error 
 		})
 
 		// 2. Creator gets viewer permission
-		permissions = append(permissions, model.DocumentPermissionMySQL{
+		addPermission(model.DocumentPermissionMySQL{
 			UserID:         doc.CreatorID,
 			DocumentID:     doc.ID,
 			PermissionType: "viewer",
@@ -510,86 +657,69 @@ func (g *TestDataGenerator) generateMySQLPermissions(ctx context.Context) error 
 			SourceID:       &doc.ID,
 		})
 
-		// 3. Customer followers get viewer permission
-		var followers []model.CustomerFollower
-		if err := g.db.WithContext(ctx).
-			Where("customer_id = ?", doc.CustomerID).
-			Find(&followers).Error; err != nil {
-			return err
+		// 3. Customer followers get viewer permission (from pre-loaded map)
+		if followers, ok := customerFollowersMap[doc.CustomerID]; ok {
+			for _, followerID := range followers {
+				addPermission(model.DocumentPermissionMySQL{
+					UserID:         followerID,
+					DocumentID:     doc.ID,
+					PermissionType: "viewer",
+					SourceType:     "customer_follower",
+					SourceID:       &doc.CustomerID,
+				})
+			}
 		}
 
-		for _, follower := range followers {
-			permissions = append(permissions, model.DocumentPermissionMySQL{
-				UserID:         follower.UserID,
-				DocumentID:     doc.ID,
-				PermissionType: "viewer",
-				SourceType:     "customer_follower",
-				SourceID:       &doc.CustomerID,
-			})
+		// 4. Manager chain gets viewer permission (from pre-loaded map)
+		if managers, ok := managerMap[doc.CreatorID]; ok {
+			// Deduplicate managers
+			seen := make(map[string]bool)
+			for _, managerID := range managers {
+				if !seen[managerID] {
+					seen[managerID] = true
+					addPermission(model.DocumentPermissionMySQL{
+						UserID:         managerID,
+						DocumentID:     doc.ID,
+						PermissionType: "viewer",
+						SourceType:     "manager_chain",
+						SourceID:       &doc.CreatorID,
+					})
+				}
+			}
 		}
 
-		// 4. Manager chain gets viewer permission (EXPANSION)
-		// Find all managers for the creator
-		var managerRelations []model.ManagementRelation
-		if err := g.db.WithContext(ctx).
-			Where("subordinate_user_id = ?", doc.CreatorID).
-			Find(&managerRelations).Error; err != nil {
-			return err
-		}
-
-		// Collect unique manager IDs
-		managerIDs := make(map[string]bool)
-		for _, rel := range managerRelations {
-			managerIDs[rel.ManagerUserID] = true
-		}
-
-		// Add permissions for all managers
-		for managerID := range managerIDs {
-			permissions = append(permissions, model.DocumentPermissionMySQL{
-				UserID:         managerID,
-				DocumentID:     doc.ID,
-				PermissionType: "viewer",
-				SourceType:     "manager_chain",
-				SourceID:       &doc.CreatorID,
-			})
-		}
-
-		// 5. Superusers get all permissions
-		var superusers []model.User
-		if err := g.db.WithContext(ctx).
-			Where("is_superuser = ?", true).
-			Find(&superusers).Error; err != nil {
-			return err
-		}
-
-		for _, superuser := range superusers {
-			permissions = append(permissions, model.DocumentPermissionMySQL{
-				UserID:         superuser.ID,
+		// 5. Superusers get all permissions (from pre-loaded list)
+		for _, superuserID := range superuserIDs {
+			addPermission(model.DocumentPermissionMySQL{
+				UserID:         superuserID,
 				DocumentID:     doc.ID,
 				PermissionType: "viewer",
 				SourceType:     "superuser",
 			})
 		}
 
-		// Batch insert every 10000 documents to avoid memory issues
+		// Batch insert every 100000 permissions to avoid memory issues
 		if len(permissions) >= 100000 {
-			if err := g.db.WithContext(ctx).CreateInBatches(permissions, 1000).Error; err != nil {
+			if err := g.db.WithContext(ctx).CreateInBatches(permissions, 5000).Error; err != nil {
 				return fmt.Errorf("failed to insert permissions batch: %w", err)
 			}
-			fmt.Printf("   Processed %d/%d documents, %d permissions so far...\n", processedDocs, len(documents), len(permissions))
-			permissions = make([]model.DocumentPermissionMySQL, 0, 100000)
+			totalPermissions += len(permissions)
+			fmt.Printf("      Processed %d/%d documents, %d permissions inserted...\n", processedDocs, len(documents), totalPermissions)
+			permissions = permissions[:0] // Reuse slice
+			permissionKeys = make(map[string]bool) // Reset dedup map for memory
 		}
 	}
 
 	// Insert remaining permissions
 	if len(permissions) > 0 {
-		if err := g.db.WithContext(ctx).CreateInBatches(permissions, 1000).Error; err != nil {
+		if err := g.db.WithContext(ctx).CreateInBatches(permissions, 5000).Error; err != nil {
 			return err
 		}
+		totalPermissions += len(permissions)
 	}
 
 	duration := time.Since(startTime)
-	fmt.Printf("   ✅ Created MySQL permissions in %v\n", duration)
+	fmt.Printf("   ✅ Created %d MySQL permissions in %v\n", totalPermissions, duration)
 
 	return nil
 }
@@ -778,5 +908,82 @@ func (g *TestDataGenerator) printStatistics(ctx context.Context) error {
 		fmt.Printf("   Reduction: %.1f%% fewer rows\n", reduction)
 	}
 
+	return nil
+}
+
+// generateDocumentReads generates document read status for users
+// Only marks documents that users actually have permission to access
+// Simulates that users have read 60% of their accessible documents
+// OPTIMIZED: Uses bulk query instead of per-user queries
+func (g *TestDataGenerator) generateDocumentReads(ctx context.Context) error {
+	fmt.Println("   Marking documents as read (optimized)...")
+
+	startTime := time.Now()
+
+	// Step 1: Get all user-document permission pairs in ONE query
+	fmt.Println("      📥 Loading user-document permissions...")
+	type UserDocPair struct {
+		UserID     string
+		DocumentID string
+	}
+	var allPermissions []UserDocPair
+	if err := g.db.WithContext(ctx).
+		Table("document_permissions_mysql").
+		Select("DISTINCT user_id, document_id").
+		Where("permission_type = ?", "viewer").
+		Find(&allPermissions).Error; err != nil {
+		return err
+	}
+	fmt.Printf("      - Loaded %d user-document pairs\n", len(allPermissions))
+
+	// Step 2: Get superuser IDs to exclude
+	var superuserIDs []string
+	if err := g.db.WithContext(ctx).
+		Table("users").
+		Where("is_superuser = ?", true).
+		Pluck("id", &superuserIDs).Error; err != nil {
+		return err
+	}
+	superuserSet := make(map[string]bool)
+	for _, id := range superuserIDs {
+		superuserSet[id] = true
+	}
+
+	// Step 3: Generate read records (60% of accessible docs)
+	fmt.Println("      🔄 Generating read records...")
+	documentReads := make([]model.DocumentRead, 0, len(allPermissions)/2)
+	readKeys := make(map[string]bool)
+	now := time.Now()
+
+	for _, perm := range allPermissions {
+		// Skip superusers
+		if superuserSet[perm.UserID] {
+			continue
+		}
+
+		// 60% chance to mark as read
+		if g.r.Float64() < 0.6 {
+			key := fmt.Sprintf("%s|%s", perm.UserID, perm.DocumentID)
+			if !readKeys[key] {
+				readKeys[key] = true
+				documentReads = append(documentReads, model.DocumentRead{
+					UserID:     perm.UserID,
+					DocumentID: perm.DocumentID,
+					ReadAt:     now,
+				})
+			}
+		}
+	}
+
+	// Step 4: Batch insert
+	fmt.Printf("      💾 Inserting %d read records...\n", len(documentReads))
+	if len(documentReads) > 0 {
+		if err := g.db.WithContext(ctx).CreateInBatches(documentReads, 5000).Error; err != nil {
+			return err
+		}
+	}
+
+	duration := time.Since(startTime)
+	fmt.Printf("   ✅ Created %d document read records in %v\n", len(documentReads), duration)
 	return nil
 }

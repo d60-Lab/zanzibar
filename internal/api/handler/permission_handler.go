@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/maynardzanzibar/internal/dto"
-	"github.com/maynardzanzibar/internal/model"
-	"github.com/maynardzanzibar/internal/repository"
+	"github.com/d60-Lab/gin-template/internal/dto"
+	"github.com/d60-Lab/gin-template/internal/repository"
 )
 
 // PermissionHandler handles permission-related HTTP requests
@@ -230,16 +231,21 @@ func (h *PermissionHandler) UpdateDepartmentManagerMySQL(c *gin.Context) {
 		return
 	}
 
+	// Copy values for goroutine - don't use request context
+	departmentID := req.DepartmentID
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Department manager update initiated (this will take a while...)",
 		"warning": "This operation will rebuild millions of permission rows",
 	})
 
-	// Run in background
+	// Run in background with background context
 	go func() {
-		// Update department manager
-		// Then rebuild all permissions for affected users
-		h.mysqlRepo.RebuildDepartmentPermissions(c.Request.Context(), req.DepartmentID)
+		ctx := context.Background()
+		if err := h.mysqlRepo.RebuildDepartmentPermissions(ctx, departmentID); err != nil {
+			// Log error - in production, use proper logging
+			fmt.Printf("Error rebuilding department permissions: %v\n", err)
+		}
 	}()
 }
 
@@ -311,6 +317,7 @@ func (h *PermissionHandler) GetStorageComparison(c *gin.Context) {
 			IndexSizeMB: zanzibarStats.IndexSizeMB,
 			TotalSizeMB: zanzibarStats.TotalSizeMB,
 		},
+		ReductionPct: reductionPct,
 	})
 }
 
@@ -359,6 +366,6 @@ func (h *PermissionHandler) GetTupleStatsZanzibar(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1/permissions/zanzibar/cache/clear [post]
 func (h *PermissionHandler) ClearZanzibarCache(c *gin.Context) {
-	h.zanzibarRepo.ClearCache()
-	c.JSON(http.StatusOK, gin.H{"message": "Cache cleared successfully"})
+	// Cache removed - no longer needed
+	c.JSON(http.StatusOK, gin.H{"message": "Cache has been removed from the implementation"})
 }

@@ -71,8 +71,9 @@ type BenchmarkResponse struct {
 
 // GetStorageComparisonResponse represents storage comparison response
 type GetStorageComparisonResponse struct {
-	MySQL    StorageStats `json:"mysql"`
-	Zanzibar StorageStats `json:"zanzibar"`
+	MySQL        StorageStats `json:"mysql"`
+	Zanzibar     StorageStats `json:"zanzibar"`
+	ReductionPct float64      `json:"reduction_percent"`
 }
 
 // StorageStats represents storage statistics

@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"gorm.io/gorm"
 
-	"github.com/maynardzanzibar/internal/model"
-	"github.com/maynardzanzibar/internal/repository"
+	"github.com/d60-Lab/gin-template/internal/model"
+	"github.com/d60-Lab/gin-template/internal/repository"
 )
 
 // BenchmarkSuite manages performance benchmarking
@@ -104,7 +105,7 @@ func (b *BenchmarkSuite) RunAllBenchmarks(ctx context.Context, config BenchmarkC
 	}
 
 	// Clear Zanzibar cache before tests
-	b.zanzibarRepo.ClearCache()
+	
 
 	// Category A: Single Permission Check
 	fmt.Println("\n📊 Category A: Single Permission Check")
@@ -162,6 +163,12 @@ func (b *BenchmarkSuite) RunAllBenchmarks(ctx context.Context, config BenchmarkC
 		return fmt.Errorf("category I failed: %w", err)
 	}
 
+	// Category J: Complete Maintenance Operations (NEW!)
+	fmt.Println("\n📊 Category J: Complete Maintenance Operations")
+	if err := b.runBenchmarkCategoryJ(ctx, config); err != nil {
+		return fmt.Errorf("category J failed: %w", err)
+	}
+
 	duration := time.Since(startTime)
 	fmt.Printf("\n✅ All benchmarks completed in %v\n", duration)
 
@@ -201,7 +208,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryA(ctx context.Context, config Bench
 
 	// Benchmark Zanzibar
 	fmt.Println("   Testing Zanzibar...")
-	b.zanzibarRepo.ClearCache()
+	
 	zanzibarColdTimes := b.runSingleCheckBenchmark(ctx, "A", "single_permission_check", "zanzibar_cold", b.zanzibarRepo, users, docs, config.TestRounds/2)
 
 	// Zanzibar warm cache
@@ -278,7 +285,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryB(ctx context.Context, config Bench
 
 	// Benchmark Zanzibar
 	fmt.Println("   Testing Zanzibar batch checks...")
-	b.zanzibarRepo.ClearCache()
+	
 	zanzibarTimes := make([]float64, 100)
 	for i := 0; i < 100; i++ {
 		user := users[i%len(users)]
@@ -323,7 +330,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryC(ctx context.Context, config Bench
 
 	// Benchmark Zanzibar
 	fmt.Println("   Testing Zanzibar user document lists...")
-	b.zanzibarRepo.ClearCache()
+	
 	zanzibarTimes := make([]float64, 50)
 	for i := 0; i < 50; i++ {
 		user := users[i%len(users)]
@@ -362,7 +369,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryD(ctx context.Context, config Bench
 	}
 
 	fmt.Println("   Testing Zanzibar: Grant permission...")
-	b.zanzibarRepo.ClearCache()
+	
 	zanzibarTimes := make([]float64, 50)
 	for i := 0; i < 50; i++ {
 		user := users[i%len(users)]
@@ -395,11 +402,22 @@ func (b *BenchmarkSuite) runBenchmarkCategoryE(ctx context.Context, config Bench
 
 	newManager := users[0]
 
-	// Test MySQL department manager change (SKIPPED - too expensive)
-	fmt.Println("   ⚠️  MySQL: Skipped (would take minutes to rebuild permissions)")
-	fmt.Println("   Testing Zanzibar: Update department manager...")
+	// Test MySQL department manager change (FULL TEST - will be slow!)
+	fmt.Println("   Testing MySQL: Update department manager...")
+	fmt.Println("   ⚠️  Warning: This operation may take several minutes on MySQL...")
+	mysqlTimes := make([]float64, 3) // Only 3 rounds for MySQL due to slowness
+	for i := 0; i < 3; i++ {
+		start := time.Now()
+		_ = b.mysqlRepo.UpdateDepartmentManager(ctx, dept.ID, newManager.ID)
+		duration := time.Since(start)
+		mysqlTimes[i] = float64(duration.Microseconds()) / 1000.0
+		b.recordResult("E", "update_dept_manager", "mysql", mysqlTimes[i], 0, true, false)
+		fmt.Printf("   MySQL round %d completed in %v\n", i+1, duration)
+	}
 
-	b.zanzibarRepo.ClearCache()
+	// Test Zanzibar
+	fmt.Println("   Testing Zanzibar: Update department manager...")
+	
 	zanzibarTimes := make([]float64, 10)
 	for i := 0; i < 10; i++ {
 		start := time.Now()
@@ -409,8 +427,8 @@ func (b *BenchmarkSuite) runBenchmarkCategoryE(ctx context.Context, config Bench
 		b.recordResult("E", "update_dept_manager", "zanzibar", zanzibarTimes[i], 1, true, false)
 	}
 
+	b.printStats("MySQL: Update Dept Manager (3 rounds only)", mysqlTimes)
 	b.printStats("Zanzibar: Update Dept Manager", zanzibarTimes)
-	fmt.Println("   📊 Note: MySQL would require rebuilding millions of permission rows")
 
 	return nil
 }
@@ -421,7 +439,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryF(ctx context.Context, config Bench
 	mysqlDuration := b.runConcurrentTest(ctx, "mysql", b.mysqlRepo, config.Concurrency, 100)
 
 	fmt.Println("   Testing Zanzibar concurrent permission checks...")
-	b.zanzibarRepo.ClearCache()
+	
 	zanzibarDuration := b.runConcurrentTest(ctx, "zanzibar", b.zanzibarRepo, config.Concurrency, 100)
 
 	fmt.Printf("   MySQL: %.2f ms total\n", mysqlDuration)
@@ -501,7 +519,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryG(ctx context.Context, config Bench
 		mysqlDuration := time.Since(start)
 
 		// Zanzibar
-		b.zanzibarRepo.ClearCache()
+		
 		start = time.Now()
 		for i := 0; i < 10; i++ {
 			user := users[i%len(users)]
@@ -518,7 +536,7 @@ func (b *BenchmarkSuite) runBenchmarkCategoryG(ctx context.Context, config Bench
 
 // Category H: Organizational Restructuring
 func (b *BenchmarkSuite) runBenchmarkCategoryH(ctx context.Context, config BenchmarkConfig) error {
-	fmt.Println("   Testing: Move 10 employees to new department")
+	fmt.Println("   Testing: Add user to department")
 
 	var users []model.User
 	b.db.WithContext(ctx).Limit(10).Find(&users)
@@ -526,9 +544,23 @@ func (b *BenchmarkSuite) runBenchmarkCategoryH(ctx context.Context, config Bench
 	var dept model.Department
 	b.db.WithContext(ctx).First(&dept)
 
-	// Zanzibar: Add users to department
-	fmt.Println("   Testing Zanzibar: Add users to department...")
-	b.zanzibarRepo.ClearCache()
+	// Test MySQL
+	fmt.Println("   Testing MySQL: Add user to department...")
+	fmt.Println("   ⚠️  Warning: This operation may be slow on MySQL...")
+	mysqlTimes := make([]float64, 3) // Only 3 rounds for MySQL
+	for i := 0; i < 3; i++ {
+		user := users[i%len(users)]
+		start := time.Now()
+		_ = b.mysqlRepo.AddUserToDepartment(ctx, user.ID, dept.ID, "member", false)
+		duration := time.Since(start)
+		mysqlTimes[i] = float64(duration.Microseconds()) / 1000.0
+		b.recordResult("H", "add_user_to_department", "mysql", mysqlTimes[i], 2, true, false)
+		fmt.Printf("   MySQL round %d completed in %v\n", i+1, duration)
+	}
+
+	// Test Zanzibar
+	fmt.Println("   Testing Zanzibar: Add user to department...")
+	
 	zanzibarTimes := make([]float64, 10)
 	for i := 0; i < 10; i++ {
 		user := users[i%len(users)]
@@ -539,51 +571,195 @@ func (b *BenchmarkSuite) runBenchmarkCategoryH(ctx context.Context, config Bench
 		b.recordResult("H", "add_user_to_department", "zanzibar", zanzibarTimes[i], 2, true, false)
 	}
 
+	b.printStats("MySQL: Add User to Department (3 rounds only)", mysqlTimes)
 	b.printStats("Zanzibar: Add User to Department", zanzibarTimes)
-	fmt.Println("   ⚠️  MySQL: Skipped (would require rebuilding all permissions for affected users)")
 
 	return nil
 }
 
 // Category I: Customer Team Changes
 func (b *BenchmarkSuite) runBenchmarkCategoryI(ctx context.Context, config BenchmarkConfig) error {
-	fmt.Println("   Testing: Add customer follower")
+	fmt.Println("   Testing: Replace customer follower (COMPLETE with manager chain)")
 
 	var customers []model.Customer
 	b.db.WithContext(ctx).Limit(10).Find(&customers)
 
 	var users []model.User
-	b.db.WithContext(ctx).Limit(10).Find(&users)
+	b.db.WithContext(ctx).Limit(20).Find(&users)
 
-	// MySQL
-	fmt.Println("   Testing MySQL: Add customer follower...")
-	mysqlTimes := make([]float64, 10)
-	for i := 0; i < 10; i++ {
-		customer := customers[i%len(customers)]
-		user := users[i%len(users)]
+	// Get a customer that has followers
+	var customer model.Customer
+	for _, c := range customers {
+		var followerCount int64
+		b.db.WithContext(ctx).Table("customer_followers").Where("customer_id = ?", c.ID).Count(&followerCount)
+		if followerCount >= 2 {
+			customer = c
+			break
+		}
+	}
+
+	// Get two existing followers for this customer
+	var followers []model.CustomerFollower
+	b.db.WithContext(ctx).Where("customer_id = ?", customer.ID).Limit(2).Find(&followers)
+
+	if len(followers) < 2 {
+		fmt.Println("   ⚠️  Not enough followers found, skipping test")
+		return nil
+	}
+
+	oldFollowerID := followers[0].UserID
+	newFollowerID := followers[1].UserID
+
+	// Test MySQL COMPLETE replacement (includes manager chain!)
+	fmt.Println("   Testing MySQL: Replace customer follower (COMPLETE)...")
+	fmt.Println("   ⚠️  Warning: This operation handles manager chain permissions, will be slow...")
+	mysqlTimes := make([]float64, 3) // Only 3 rounds due to complexity
+	for i := 0; i < 3; i++ {
 		start := time.Now()
-		_ = b.mysqlRepo.AddCustomerFollowerPermissions(ctx, customer.ID, user.ID)
+		_ = b.mysqlRepo.ReplaceCustomerFollowerComplete(ctx, customer.ID, oldFollowerID, newFollowerID)
 		duration := time.Since(start)
 		mysqlTimes[i] = float64(duration.Microseconds()) / 1000.0
-		b.recordResult("I", "add_customer_follower", "mysql", mysqlTimes[i], 0, true, false)
+		b.recordResult("I", "replace_customer_follower_complete", "mysql", mysqlTimes[i], 0, true, false)
+		fmt.Printf("   MySQL round %d completed in %v\n", i+1, duration)
+
+		// Swap back for next round
+		time.Sleep(100 * time.Millisecond)
+		start = time.Now()
+		_ = b.mysqlRepo.ReplaceCustomerFollowerComplete(ctx, customer.ID, newFollowerID, oldFollowerID)
+		_ = time.Since(start)
 	}
 
-	// Zanzibar
-	fmt.Println("   Testing Zanzibar: Add customer follower...")
-	b.zanzibarRepo.ClearCache()
+	// Test Zanzibar
+	fmt.Println("   Testing Zanzibar: Replace customer follower...")
+	
 	zanzibarTimes := make([]float64, 10)
 	for i := 0; i < 10; i++ {
-		customer := customers[i%len(customers)]
-		user := users[i%len(users)]
 		start := time.Now()
-		_ = b.zanzibarRepo.AddCustomerFollower(ctx, customer.ID, user.ID)
+		_ = b.zanzibarRepo.RemoveCustomerFollower(ctx, customer.ID, oldFollowerID)
+		_ = b.zanzibarRepo.AddCustomerFollower(ctx, customer.ID, newFollowerID)
 		duration := time.Since(start)
 		zanzibarTimes[i] = float64(duration.Microseconds()) / 1000.0
-		b.recordResult("I", "add_customer_follower", "zanzibar", zanzibarTimes[i], 1, true, false)
+		b.recordResult("I", "replace_customer_follower_complete", "zanzibar", zanzibarTimes[i], 2, true, false)
+
+		// Swap back
+		_ = b.zanzibarRepo.RemoveCustomerFollower(ctx, customer.ID, newFollowerID)
+		_ = b.zanzibarRepo.AddCustomerFollower(ctx, customer.ID, oldFollowerID)
 	}
 
-	b.printStats("MySQL: Add Customer Follower", mysqlTimes)
-	b.printStats("Zanzibar: Add Customer Follower", zanzibarTimes)
+	b.printStats("MySQL: Replace Customer Follower Complete (3 rounds only)", mysqlTimes)
+	b.printStats("Zanzibar: Replace Customer Follower", zanzibarTimes)
+
+	return nil
+}
+
+// Category J: Complete Maintenance Operations
+func (b *BenchmarkSuite) runBenchmarkCategoryJ(ctx context.Context, config BenchmarkConfig) error {
+	fmt.Println("\n   Testing: Complete maintenance operations")
+
+	// Test 1: Add document with all permissions (Scenario 1)
+	fmt.Println("\n   📄 Test 1: Add document (COMPLETE with all permission sources)")
+
+	var customers []model.Customer
+	b.db.WithContext(ctx).Limit(1).Find(&customers)
+
+	var users []model.User
+	b.db.WithContext(ctx).Limit(1).Find(&users)
+
+	if len(customers) == 0 || len(users) == 0 {
+		fmt.Println("   ⚠️  Not enough data, skipping test")
+		return nil
+	}
+
+	// Create a test document
+	testDoc := &model.Document{
+		ID:         fmt.Sprintf("benchmark-doc-%d", time.Now().UnixNano()),
+		CustomerID: customers[0].ID,
+		CreatorID:  users[0].ID,
+		Title:      "Benchmark Test Document",
+	}
+	b.db.WithContext(ctx).Create(testDoc)
+
+	// MySQL: Add document permissions (COMPLETE)
+	fmt.Println("   Testing MySQL: AddDocumentPermissionsComplete...")
+	fmt.Println("   ⚠️  Warning: This will add ALL permission sources (followers, managers, superusers)...")
+	mysqlDocTimes := make([]float64, 3) // Only 3 rounds
+	for i := 0; i < 3; i++ {
+		// Clean up previous permissions
+		b.db.WithContext(ctx).Exec("DELETE FROM document_permissions_mysql WHERE document_id = ?", testDoc.ID)
+
+		start := time.Now()
+		_ = b.mysqlRepo.AddDocumentPermissionsComplete(ctx, testDoc)
+		duration := time.Since(start)
+		mysqlDocTimes[i] = float64(duration.Microseconds()) / 1000.0
+		b.recordResult("J", "add_document_complete", "mysql", mysqlDocTimes[i], 0, true, false)
+		fmt.Printf("   MySQL round %d completed in %v\n", i+1, duration)
+	}
+
+	// Zanzibar: Add document permissions
+	fmt.Println("   Testing Zanzibar: Add document permissions...")
+	
+	zanzibarDocTimes := make([]float64, 10)
+	for i := 0; i < 10; i++ {
+		// Create new doc for each round
+		newDoc := &model.Document{
+			ID:         fmt.Sprintf("zanzibar-doc-%d-%d", time.Now().UnixNano(), i),
+			CustomerID: customers[0].ID,
+			CreatorID:  users[0].ID,
+			Title:      "Zanzibar Benchmark Document",
+		}
+
+		start := time.Now()
+		_ = b.zanzibarRepo.GrantDirectPermission(ctx, newDoc.CreatorID, newDoc.ID, "owner")
+		duration := time.Since(start)
+		zanzibarDocTimes[i] = float64(duration.Microseconds()) / 1000.0
+		b.recordResult("J", "add_document_complete", "zanzibar", zanzibarDocTimes[i], 1, true, false)
+	}
+
+	b.printStats("MySQL: Add Document Complete (3 rounds only)", mysqlDocTimes)
+	b.printStats("Zanzibar: Add Document", zanzibarDocTimes)
+
+	// Test 2: Revoke superuser (Scenario 5)
+	fmt.Println("\n   👑 Test 2: Revoke superuser (COMPLETE)")
+
+	// Find a superuser
+	var superuser model.User
+	err := b.db.WithContext(ctx).Where("is_superuser = ?", true).First(&superuser).Error
+	if err != nil {
+		fmt.Println("   ⚠️  No superuser found, skipping superuser test")
+		return nil
+	}
+
+	// MySQL: Revoke superuser (COMPLETE)
+	fmt.Println("   Testing MySQL: RevokeSuperuserPermissionsComplete...")
+	fmt.Println("   ⚠️  Warning: This will check ALL superuser permissions...")
+	mysqlSuperTimes := make([]float64, 1) // Only 1 round - too expensive!
+	start := time.Now()
+	_ = b.mysqlRepo.RevokeSuperuserPermissionsComplete(ctx, superuser.ID)
+	duration := time.Since(start)
+	mysqlSuperTimes[0] = float64(duration.Microseconds()) / 1000.0
+	b.recordResult("J", "revoke_superuser_complete", "mysql", mysqlSuperTimes[0], 0, true, false)
+	fmt.Printf("   MySQL completed in %v\n", duration)
+
+	// Restore superuser flag for next tests
+	b.db.WithContext(ctx).Table("users").Where("id = ?", superuser.ID).Update("is_superuser", true)
+
+	// Zanzibar: Revoke superuser
+	fmt.Println("   Testing Zanzibar: Revoke superuser...")
+	
+	zanzibarSuperTimes := make([]float64, 10)
+	for i := 0; i < 10; i++ {
+		start := time.Now()
+		_ = b.zanzibarRepo.RevokeSuperuser(ctx, superuser.ID)
+		duration := time.Since(start)
+		zanzibarSuperTimes[i] = float64(duration.Microseconds()) / 1000.0
+		b.recordResult("J", "revoke_superuser_complete", "zanzibar", zanzibarSuperTimes[i], 1, true, false)
+
+		// Restore for next round
+		_ = b.zanzibarRepo.GrantSuperuser(ctx, superuser.ID)
+	}
+
+	b.printStats("MySQL: Revoke Superuser Complete (1 round only!)", mysqlSuperTimes)
+	b.printStats("Zanzibar: Revoke Superuser", zanzibarSuperTimes)
 
 	return nil
 }
@@ -640,27 +816,14 @@ func mean(values []float64) float64 {
 func median(values []float64) float64 {
 	sorted := make([]float64, len(values))
 	copy(sorted, values)
-	// Simple sort (for small datasets)
-	for i := 0; i < len(sorted); i++ {
-		for j := i + 1; j < len(sorted); j++ {
-			if sorted[i] > sorted[j] {
-				sorted[i], sorted[j] = sorted[j], sorted[i]
-			}
-		}
-	}
+	sort.Float64s(sorted)
 	return sorted[len(sorted)/2]
 }
 
 func percentile(values []float64, p int) float64 {
 	sorted := make([]float64, len(values))
 	copy(sorted, values)
-	for i := 0; i < len(sorted); i++ {
-		for j := i + 1; j < len(sorted); j++ {
-			if sorted[i] > sorted[j] {
-				sorted[i], sorted[j] = sorted[j], sorted[i]
-			}
-		}
-	}
+	sort.Float64s(sorted)
 	idx := int(math.Ceil(float64(len(sorted)) * float64(p) / 100.0))
 	if idx >= len(sorted) {
 		idx = len(sorted) - 1

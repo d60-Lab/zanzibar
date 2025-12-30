@@ -130,6 +130,11 @@ type DocumentPermissionMySQL struct {
 	Document *Document `gorm:"foreignKey:DocumentID" json:"document,omitempty"`
 }
 
+// TableName specifies the table name for DocumentPermissionMySQL
+func (DocumentPermissionMySQL) TableName() string {
+	return "document_permissions_mysql"
+}
+
 // =====================================================
 // Zanzibar Permission Model (Tuple-Based)
 // =====================================================
@@ -270,4 +275,21 @@ func (l PermissionSourceList) Contains(sourceType, sourceID string) bool {
 		}
 	}
 	return false
+}
+
+// =====================================================
+// Document Read Tracking
+// =====================================================
+
+// DocumentRead tracks which users have read which documents
+type DocumentRead struct {
+	ID         int64     `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID     string    `gorm:"type:varchar(36);not null;uniqueIndex:uk_user_doc" json:"user_id"`
+	DocumentID string    `gorm:"type:varchar(36);not null;uniqueIndex:uk_user_doc" json:"document_id"`
+	ReadAt     time.Time `gorm:"not null;index" json:"read_at"`
+}
+
+// TableName specifies the table name for DocumentRead
+func (DocumentRead) TableName() string {
+	return "document_reads"
 }
