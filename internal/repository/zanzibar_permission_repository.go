@@ -552,7 +552,8 @@ func (r *ZanzibarPermissionRepository) GetUserDocuments(ctx context.Context, use
 	}, nil
 }
 
-// getAllSubordinates recursively gets all subordinates of a manager
+// getAllSubordinates recursively gets all subordinates of a manager using RelationTuple
+// This implements the Zanzibar way: department#manager manages department#member
 func (r *ZanzibarPermissionRepository) getAllSubordinates(ctx context.Context, managerUserID string, visited map[string]bool, currentDepth, maxDepth int) ([]string, error) {
 	if currentDepth > maxDepth {
 		return []string{}, nil
@@ -560,28 +561,47 @@ func (r *ZanzibarPermissionRepository) getAllSubordinates(ctx context.Context, m
 
 	var subordinateIDs []string
 
-	var managerRelations []model.ManagementRelation
+	// Step 1: Find all departments where this user is the manager
+	// Query: department:*#manager@user:managerUserID
+	var managerTuples []model.RelationTuple
 	err := r.db.WithContext(ctx).
-		Where("manager_user_id = ?", managerUserID).
-		Find(&managerRelations).Error
+		Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"department", "manager", "user", managerUserID).
+		Find(&managerTuples).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	for _, rel := range managerRelations {
-		subordinateID := rel.SubordinateUserID
+	// Step 2: For each managed department, find all members
+	for _, managerTuple := range managerTuples {
+		departmentID := managerTuple.ObjectID
 
-		if !visited[subordinateID] {
-			visited[subordinateID] = true
-			subordinateIDs = append(subordinateIDs, subordinateID)
+		// Query: department:departmentID#member@user:*
+		var memberTuples []model.RelationTuple
+		err := r.db.WithContext(ctx).
+			Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ?",
+				"department", departmentID, "member", "user").
+			Find(&memberTuples).Error
 
-			// Recursively get subordinates' subordinates
-			nestedSubordinates, err := r.getAllSubordinates(ctx, subordinateID, visited, currentDepth+1, maxDepth)
-			if err != nil {
-				return nil, err
+		if err != nil {
+			return nil, err
+		}
+
+		for _, memberTuple := range memberTuples {
+			subordinateID := memberTuple.SubjectID
+
+			if !visited[subordinateID] {
+				visited[subordinateID] = true
+				subordinateIDs = append(subordinateIDs, subordinateID)
+
+				// Recursively get subordinates' subordinates
+				nestedSubordinates, err := r.getAllSubordinates(ctx, subordinateID, visited, currentDepth+1, maxDepth)
+				if err != nil {
+					return nil, err
+				}
+				subordinateIDs = append(subordinateIDs, nestedSubordinates...)
 			}
-			subordinateIDs = append(subordinateIDs, nestedSubordinates...)
 		}
 	}
 
