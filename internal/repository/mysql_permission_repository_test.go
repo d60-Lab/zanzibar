@@ -18,7 +18,7 @@ func setupMySQLTestDB(t *testing.T) *gorm.DB {
 	// Get MySQL connection from environment or use default
 	dsn := os.Getenv("MYSQL_DSN")
 	if dsn == "" {
-		dsn = "root:123456@tcp(127.0.0.1:3306)/gin_template?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = "root:123456@tcp(127.0.0.1:3306)/zanzibar_permission?charset=utf8mb4&parseTime=True&loc=Local"
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})

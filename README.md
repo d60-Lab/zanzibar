@@ -356,19 +356,19 @@ cd zanzibar
 
 ```bash
 # 创建数据库
-mysql -u root -p123456 -h 127.0.0.1 -e "CREATE DATABASE gin_template;"
+mysql -u root -p123456 -h 127.0.0.1 -e "CREATE DATABASE zanzibar_permission;"
 
 # 运行迁移脚本
-mysql -u root -p123456 -h 127.0.0.1 gin_template < migrations/001_permission_comparison_schema.sql
+mysql -u root -p123456 -h 127.0.0.1 zanzibar_permission < migrations/001_permission_comparison_schema.sql
 
 # 验证表创建
-mysql -u root -p123456 -h 127.0.0.1 gin_template -e "SHOW TABLES;"
+mysql -u root -p123456 -h 127.0.0.1 zanzibar_permission -e "SHOW TABLES;"
 ```
 
 预期输出:
 ```
-+----------------------------------+
-| Tables_in_gin_template           |
++-------------------------------------------+
+| Tables_in_zanzibar_permission             |
 +----------------------------------+
 | customers                        |
 | customer_followers               |
@@ -387,7 +387,7 @@ mysql -u root -p123456 -h 127.0.0.1 gin_template -e "SHOW TABLES;"
 如果之前运行过测试,先清空数据:
 
 ```bash
-mysql -u root -p123456 -h 127.0.0.1 gin_template -e "
+mysql -u root -p123456 -h 127.0.0.1 zanzibar_permission -e "
 SET FOREIGN_KEY_CHECKS=0;
 TRUNCATE TABLE document_reads;
 TRUNCATE TABLE relation_tuples;

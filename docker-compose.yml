@@ -9,7 +9,7 @@ services:
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_DATABASE=gin_template
+      - DB_DATABASE=zanzibar_permission
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - REDIS_HOST=redis
@@ -24,7 +24,7 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_DB=gin_template
+      - POSTGRES_DB=zanzibar_permission
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:

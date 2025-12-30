@@ -11,8 +11,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/maynardzanzibar/internal/repository"
-	"github.com/maynardzanzibar/internal/service"
+	"github.com/d60-Lab/gin-template/internal/repository"
+	"github.com/d60-Lab/gin-template/internal/service"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	 // Get database connection from environment or use default
 	dsn := os.Getenv("DATABASE_DSN")
 	if dsn == "" {
-		dsn = "root:password@tcp(localhost:3306)/gin_template?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = "root:password@tcp(localhost:3306)/zanzibar_permission?charset=utf8mb4&parseTime=True&loc=Local"
 	}
 
 	// Connect to database

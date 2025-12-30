@@ -1,0 +1,1788 @@
+=== RUN   TestAddDocumentPermissionsComplete
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:36 [35;1mError 1062 (23000): Duplicate entry 'creator-1' for key 'PRIMARY'
+[0m[33m[6.074ms] [34;1m[rows:0][0m INSERT INTO `users` (`id`,`name`,`email`,`primary_department_id`,`is_superuser`,`created_at`,`updated_at`,`deleted_at`) VALUES ('creator-1','Document Creator','creator@example.com',NULL,false,'2025-12-30 15:28:16.129','2025-12-30 15:28:16.129',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:36 [35;1mError 1062 (23000): Duplicate entry 'follower-1' for key 'PRIMARY'
+[0m[33m[1.266ms] [34;1m[rows:0][0m INSERT INTO `users` (`id`,`name`,`email`,`primary_department_id`,`is_superuser`,`created_at`,`updated_at`,`deleted_at`) VALUES ('follower-1','Follower 1','follower1@example.com',NULL,false,'2025-12-30 15:28:16.134','2025-12-30 15:28:16.134',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:36 [35;1mError 1062 (23000): Duplicate entry 'follower-2' for key 'PRIMARY'
+[0m[33m[1.439ms] [34;1m[rows:0][0m INSERT INTO `users` (`id`,`name`,`email`,`primary_department_id`,`is_superuser`,`created_at`,`updated_at`,`deleted_at`) VALUES ('follower-2','Follower 2','follower2@example.com',NULL,false,'2025-12-30 15:28:16.136','2025-12-30 15:28:16.136',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:36 [35;1mError 1062 (23000): Duplicate entry 'manager-1' for key 'PRIMARY'
+[0m[33m[1.280ms] [34;1m[rows:0][0m INSERT INTO `users` (`id`,`name`,`email`,`primary_department_id`,`is_superuser`,`created_at`,`updated_at`,`deleted_at`) VALUES ('manager-1','Creator''s Manager','manager1@example.com',NULL,false,'2025-12-30 15:28:16.137','2025-12-30 15:28:16.137',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:36 [35;1mError 1062 (23000): Duplicate entry 'manager-2' for key 'PRIMARY'
+[0m[33m[1.387ms] [34;1m[rows:0][0m INSERT INTO `users` (`id`,`name`,`email`,`primary_department_id`,`is_superuser`,`created_at`,`updated_at`,`deleted_at`) VALUES ('manager-2','Follower''s Manager','manager2@example.com',NULL,false,'2025-12-30 15:28:16.138','2025-12-30 15:28:16.138',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:36 [35;1mError 1062 (23000): Duplicate entry 'superuser-1' for key 'PRIMARY'
+[0m[33m[1.523ms] [34;1m[rows:0][0m INSERT INTO `users` (`id`,`name`,`email`,`primary_department_id`,`is_superuser`,`created_at`,`updated_at`,`deleted_at`) VALUES ('superuser-1','Superuser','super@example.com',NULL,false,'2025-12-30 15:28:16.14','2025-12-30 15:28:16.14',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:56 [35;1mError 1062 (23000): Duplicate entry 'customer-1' for key 'PRIMARY'
+[0m[33m[2.396ms] [34;1m[rows:0][0m INSERT INTO `customers` (`id`,`name`,`created_at`,`updated_at`,`deleted_at`) VALUES ('customer-1','Test Customer','2025-12-30 15:28:16.162','2025-12-30 15:28:16.162',NULL)
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:47 [35;1mError 1062 (23000): Duplicate entry 'dept-1' for key 'PRIMARY'
+[0m[33m[1.523ms] [34;1m[rows:0][0m INSERT INTO `departments` (`id`,`name`,`parent_id`,`level`,`manager_id`,`created_at`,`updated_at`) VALUES ('dept-1','Engineering',NULL,3,NULL,'2025-12-30 15:28:16.164','2025-12-30 15:28:16.164')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:334 [35;1mError 1062 (23000): Duplicate entry 'creator-1-dept-1' for key 'uk_user_dept'
+[0m[33m[3.750ms] [34;1m[rows:0][0m INSERT INTO `user_departments` (`user_id`,`department_id`,`role`,`is_primary`,`created_at`) VALUES ('creator-1','dept-1','member',true,'2025-12-30 15:28:16.165')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:342 [35;1mError 1062 (23000): Duplicate entry 'follower-1-dept-1' for key 'uk_user_dept'
+[0m[33m[2.239ms] [34;1m[rows:0][0m INSERT INTO `user_departments` (`user_id`,`department_id`,`role`,`is_primary`,`created_at`) VALUES ('follower-1','dept-1','member',true,'2025-12-30 15:28:16.169')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:351 [35;1mError 1062 (23000): Duplicate entry 'manager-1-creator-1-dept-1' for key 'uk_manager_subordinate_dept'
+[0m[33m[3.778ms] [34;1m[rows:0][0m INSERT INTO `management_relations` (`manager_user_id`,`subordinate_user_id`,`department_id`,`management_level`,`created_at`) VALUES ('manager-1','creator-1','dept-1',1,'2025-12-30 15:28:16.172')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:359 [35;1mError 1062 (23000): Duplicate entry 'manager-2-follower-1-dept-1' for key 'uk_manager_subordinate_dept'
+[0m[33m[1.960ms] [34;1m[rows:0][0m INSERT INTO `management_relations` (`manager_user_id`,`subordinate_user_id`,`department_id`,`management_level`,`created_at`) VALUES ('manager-2','follower-1','dept-1',1,'2025-12-30 15:28:16.175')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:367 [35;1mError 1062 (23000): Duplicate entry 'customer-1-follower-1' for key 'PRIMARY'
+[0m[33m[2.180ms] [34;1m[rows:0][0m INSERT INTO `customer_followers` (`customer_id`,`user_id`,`created_at`) VALUES ('customer-1','follower-1','2025-12-30 15:28:16.177')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:368 [35;1mError 1062 (23000): Duplicate entry 'customer-1-follower-2' for key 'PRIMARY'
+[0m[33m[1.221ms] [34;1m[rows:0][0m INSERT INTO `customer_followers` (`customer_id`,`user_id`,`created_at`) VALUES ('customer-1','follower-2','2025-12-30 15:28:16.179')
+
+2025/12/30 15:28:16 [31;1m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository_test.go:377 [35;1mError 1062 (23000): Duplicate entry 'doc-complete-test' for key 'PRIMARY'
+[0m[33m[1.183ms] [34;1m[rows:0][0m INSERT INTO `documents` (`id`,`title`,`customer_id`,`creator_id`,`created_at`,`updated_at`,`deleted_at`) VALUES ('doc-complete-test','Test Document - Complete Logic','customer-1','creator-1','2025-12-30 15:28:16.181','2025-12-30 15:28:16.181',NULL)
+
+2025/12/30 15:28:16 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[543.495ms] [33m[rows:17][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1003' AND mr.subordinate_user_id = 'user-1003'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:17 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[244.600ms] [33m[rows:21][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1010' AND mr.subordinate_user_id = 'user-1010'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:18 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1458.123ms] [33m[rows:22][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1021' AND mr.subordinate_user_id = 'user-1021'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:18 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[445.891ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1033' AND mr.subordinate_user_id = 'user-1033'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:20 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1105.095ms] [33m[rows:19][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1036' AND mr.subordinate_user_id = 'user-1036'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:20 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[812.562ms] [33m[rows:12][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1037' AND mr.subordinate_user_id = 'user-1037'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:21 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[880.418ms] [33m[rows:21][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-106' AND mr.subordinate_user_id = 'user-106'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:22 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[414.229ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1086' AND mr.subordinate_user_id = 'user-1086'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:23 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[888.014ms] [33m[rows:22][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1097' AND mr.subordinate_user_id = 'user-1097'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:24 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1765.573ms] [33m[rows:25][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1130' AND mr.subordinate_user_id = 'user-1130'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:26 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1251.417ms] [33m[rows:15][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1139' AND mr.subordinate_user_id = 'user-1139'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:27 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1086.772ms] [33m[rows:32][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1163' AND mr.subordinate_user_id = 'user-1163'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:28 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1602.717ms] [33m[rows:19][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1171' AND mr.subordinate_user_id = 'user-1171'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:29 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[538.358ms] [33m[rows:17][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1186' AND mr.subordinate_user_id = 'user-1186'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:30 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[847.518ms] [33m[rows:13][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1189' AND mr.subordinate_user_id = 'user-1189'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:31 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1201.343ms] [33m[rows:18][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1223' AND mr.subordinate_user_id = 'user-1223'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:31 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[276.045ms] [33m[rows:24][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1251' AND mr.subordinate_user_id = 'user-1251'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:32 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[417.000ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1318' AND mr.subordinate_user_id = 'user-1318'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:33 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1212.919ms] [33m[rows:23][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1324' AND mr.subordinate_user_id = 'user-1324'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:35 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[2477.317ms] [33m[rows:21][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1332' AND mr.subordinate_user_id = 'user-1332'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:36 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[413.094ms] [33m[rows:9][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1349' AND mr.subordinate_user_id = 'user-1349'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:36 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[426.863ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1352' AND mr.subordinate_user_id = 'user-1352'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:37 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[786.049ms] [33m[rows:13][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1366' AND mr.subordinate_user_id = 'user-1366'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:37 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[430.665ms] [33m[rows:10][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1376' AND mr.subordinate_user_id = 'user-1376'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:38 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[692.166ms] [33m[rows:13][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1385' AND mr.subordinate_user_id = 'user-1385'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:39 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[406.914ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1396' AND mr.subordinate_user_id = 'user-1396'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:39 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[555.809ms] [33m[rows:15][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1404' AND mr.subordinate_user_id = 'user-1404'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:39 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[434.918ms] [33m[rows:12][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1412' AND mr.subordinate_user_id = 'user-1412'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:41 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1028.191ms] [33m[rows:19][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1430' AND mr.subordinate_user_id = 'user-1430'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:41 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[582.367ms] [33m[rows:16][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1436' AND mr.subordinate_user_id = 'user-1436'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:42 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[482.182ms] [33m[rows:10][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1445' AND mr.subordinate_user_id = 'user-1445'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:42 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[672.662ms] [33m[rows:16][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1449' AND mr.subordinate_user_id = 'user-1449'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:43 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[281.332ms] [33m[rows:17][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1468' AND mr.subordinate_user_id = 'user-1468'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:45 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[2836.443ms] [33m[rows:35][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1470' AND mr.subordinate_user_id = 'user-1470'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:46 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1069.641ms] [33m[rows:14][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1492' AND mr.subordinate_user_id = 'user-1492'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:47 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[417.377ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1512' AND mr.subordinate_user_id = 'user-1512'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:47 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[416.919ms] [33m[rows:10][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1528' AND mr.subordinate_user_id = 'user-1528'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:48 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[410.838ms] [33m[rows:10][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1535' AND mr.subordinate_user_id = 'user-1535'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:48 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[554.442ms] [33m[rows:17][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1546' AND mr.subordinate_user_id = 'user-1546'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:50 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[2072.564ms] [33m[rows:36][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1551' AND mr.subordinate_user_id = 'user-1551'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:51 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[445.221ms] [33m[rows:13][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1577' AND mr.subordinate_user_id = 'user-1577'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:52 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1267.997ms] [33m[rows:14][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1586' AND mr.subordinate_user_id = 'user-1586'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:53 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[454.616ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-163' AND mr.subordinate_user_id = 'user-163'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:53 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[441.576ms] [33m[rows:19][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1635' AND mr.subordinate_user_id = 'user-1635'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:54 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1169.678ms] [33m[rows:25][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1664' AND mr.subordinate_user_id = 'user-1664'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:54 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[281.709ms] [33m[rows:20][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1669' AND mr.subordinate_user_id = 'user-1669'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:55 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[441.750ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1678' AND mr.subordinate_user_id = 'user-1678'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:56 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[694.045ms] [33m[rows:18][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1687' AND mr.subordinate_user_id = 'user-1687'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:56 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[704.207ms] [33m[rows:14][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1695' AND mr.subordinate_user_id = 'user-1695'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:57 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[465.760ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1730' AND mr.subordinate_user_id = 'user-1730'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:57 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[436.675ms] [33m[rows:12][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1737' AND mr.subordinate_user_id = 'user-1737'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:57 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[349.264ms] [33m[rows:9][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1742' AND mr.subordinate_user_id = 'user-1742'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:58 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[435.165ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1757' AND mr.subordinate_user_id = 'user-1757'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:58 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[291.981ms] [33m[rows:30][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-176' AND mr.subordinate_user_id = 'user-176'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:28:59 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[852.853ms] [33m[rows:13][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1763' AND mr.subordinate_user_id = 'user-1763'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:00 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[719.388ms] [33m[rows:12][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1781' AND mr.subordinate_user_id = 'user-1781'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:00 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[450.943ms] [33m[rows:10][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1793' AND mr.subordinate_user_id = 'user-1793'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:01 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[839.383ms] [33m[rows:13][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1809' AND mr.subordinate_user_id = 'user-1809'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:02 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1409.522ms] [33m[rows:26][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1811' AND mr.subordinate_user_id = 'user-1811'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:04 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1044.280ms] [33m[rows:18][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1814' AND mr.subordinate_user_id = 'user-1814'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:05 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1466.600ms] [33m[rows:20][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1827' AND mr.subordinate_user_id = 'user-1827'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:05 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[429.053ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1832' AND mr.subordinate_user_id = 'user-1832'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:07 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1273.298ms] [33m[rows:19][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1835' AND mr.subordinate_user_id = 'user-1835'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:08 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[992.961ms] [33m[rows:18][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1837' AND mr.subordinate_user_id = 'user-1837'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:08 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[619.009ms] [33m[rows:16][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1860' AND mr.subordinate_user_id = 'user-1860'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:09 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[421.658ms] [33m[rows:11][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1876' AND mr.subordinate_user_id = 'user-1876'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:10 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[1450.514ms] [33m[rows:31][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1879' AND mr.subordinate_user_id = 'user-1879'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+
+2025/12/30 15:29:11 [32m/Users/maynard/data/codestation/git/d60-lab/zanzibar/internal/repository/mysql_permission_repository.go:821 [33mSLOW SQL >= 200ms
+[0m[31;1m[667.853ms] [33m[rows:14][35m 
+		WITH RECURSIVE manager_chain AS (
+			-- Level 1: Direct managers
+			SELECT mr.manager_user_id, 1 as level
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			WHERE ud.user_id = 'user-1884' AND mr.subordinate_user_id = 'user-1884'
+
+			UNION ALL
+
+			-- Higher levels: Managers' managers
+			SELECT mr.manager_user_id, mc.level + 1
+			FROM management_relations mr
+			JOIN user_departments ud ON ud.department_id = mr.department_id
+			JOIN manager_chain mc ON mc.manager_user_id = mr.subordinate_user_id
+			WHERE mc.level < 5
+		)
+		SELECT DISTINCT manager_user_id FROM manager_chain WHERE manager_user_id IS NOT NULL
+	[0m
+   📊 AddDocumentPermissionsComplete completed in 55.241136333s
+      - Creator: 1
+      - Followers: 97
+      - Creator's managers: 1
+      - Followers' managers: 195
+      - Superusers: 11
+      - Total permissions added: 306
+    mysql_permission_repository_test.go:396: ✅ Total permissions created: 302
+    mysql_permission_repository_test.go:398:   - creator-1 | viewer | direct | source: 0x14000347190
+    mysql_permission_repository_test.go:398:   - creator-1 | owner | direct | source: 0x140003471e0
+    mysql_permission_repository_test.go:398:   - follower-1 | viewer | customer_follower | source: 0x14000347230
+    mysql_permission_repository_test.go:398:   - follower-2 | viewer | customer_follower | source: 0x14000347280
+    mysql_permission_repository_test.go:398:   - manager-1 | viewer | manager_chain | source: 0x140003472d0
+    mysql_permission_repository_test.go:398:   - manager-2 | viewer | manager_chain | source: 0x14000347320
+    mysql_permission_repository_test.go:398:   - superuser-1 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-0 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-1 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-1002 | viewer | manager_chain | source: 0x14000347430
+    mysql_permission_repository_test.go:398:   - user-1003 | viewer | customer_follower | source: 0x14000347480
+    mysql_permission_repository_test.go:398:   - user-1010 | viewer | customer_follower | source: 0x140003474d0
+    mysql_permission_repository_test.go:398:   - user-1011 | viewer | customer_follower | source: 0x14000347520
+    mysql_permission_repository_test.go:398:   - user-1021 | viewer | customer_follower | source: 0x14000347570
+    mysql_permission_repository_test.go:398:   - user-1033 | viewer | customer_follower | source: 0x140003475c0
+    mysql_permission_repository_test.go:398:   - user-1036 | viewer | customer_follower | source: 0x14000347610
+    mysql_permission_repository_test.go:398:   - user-1037 | viewer | customer_follower | source: 0x14000347660
+    mysql_permission_repository_test.go:398:   - user-1043 | viewer | customer_follower | source: 0x140003476b0
+    mysql_permission_repository_test.go:398:   - user-106 | viewer | customer_follower | source: 0x14000347700
+    mysql_permission_repository_test.go:398:   - user-1086 | viewer | customer_follower | source: 0x14000347750
+    mysql_permission_repository_test.go:398:   - user-1089 | viewer | manager_chain | source: 0x140003477a0
+    mysql_permission_repository_test.go:398:   - user-1097 | viewer | customer_follower | source: 0x140003477f0
+    mysql_permission_repository_test.go:398:   - user-1104 | viewer | customer_follower | source: 0x14000347840
+    mysql_permission_repository_test.go:398:   - user-1130 | viewer | customer_follower | source: 0x14000347890
+    mysql_permission_repository_test.go:398:   - user-1139 | viewer | customer_follower | source: 0x140003478e0
+    mysql_permission_repository_test.go:398:   - user-1156 | viewer | manager_chain | source: 0x14000347930
+    mysql_permission_repository_test.go:398:   - user-1158 | viewer | manager_chain | source: 0x14000347980
+    mysql_permission_repository_test.go:398:   - user-1163 | viewer | customer_follower | source: 0x140003479d0
+    mysql_permission_repository_test.go:398:   - user-1164 | viewer | customer_follower | source: 0x14000347a20
+    mysql_permission_repository_test.go:398:   - user-1171 | viewer | customer_follower | source: 0x14000347a70
+    mysql_permission_repository_test.go:398:   - user-1186 | viewer | customer_follower | source: 0x14000347ac0
+    mysql_permission_repository_test.go:398:   - user-1189 | viewer | customer_follower | source: 0x14000347b10
+    mysql_permission_repository_test.go:398:   - user-1211 | viewer | manager_chain | source: 0x14000347b60
+    mysql_permission_repository_test.go:398:   - user-1223 | viewer | customer_follower | source: 0x14000347bb0
+    mysql_permission_repository_test.go:398:   - user-1251 | viewer | customer_follower | source: 0x14000347c00
+    mysql_permission_repository_test.go:398:   - user-1260 | viewer | customer_follower | source: 0x14000347c50
+    mysql_permission_repository_test.go:398:   - user-1262 | viewer | customer_follower | source: 0x14000347ca0
+    mysql_permission_repository_test.go:398:   - user-1270 | viewer | customer_follower | source: 0x14000347cf0
+    mysql_permission_repository_test.go:398:   - user-1274 | viewer | manager_chain | source: 0x14000347d40
+    mysql_permission_repository_test.go:398:   - user-128 | viewer | customer_follower | source: 0x14000347d90
+    mysql_permission_repository_test.go:398:   - user-1291 | viewer | manager_chain | source: 0x14000347de0
+    mysql_permission_repository_test.go:398:   - user-1307 | viewer | manager_chain | source: 0x14000347e30
+    mysql_permission_repository_test.go:398:   - user-1314 | viewer | manager_chain | source: 0x14000347e80
+    mysql_permission_repository_test.go:398:   - user-1318 | viewer | customer_follower | source: 0x14000347ed0
+    mysql_permission_repository_test.go:398:   - user-1324 | viewer | customer_follower | source: 0x14000347f20
+    mysql_permission_repository_test.go:398:   - user-1332 | viewer | customer_follower | source: 0x14000347f70
+    mysql_permission_repository_test.go:398:   - user-1335 | viewer | customer_follower | source: 0x140000280b0
+    mysql_permission_repository_test.go:398:   - user-1349 | viewer | customer_follower | source: 0x14000028160
+    mysql_permission_repository_test.go:398:   - user-1351 | viewer | manager_chain | source: 0x14000028cf0
+    mysql_permission_repository_test.go:398:   - user-1352 | viewer | customer_follower | source: 0x14000028dd0
+    mysql_permission_repository_test.go:398:   - user-1366 | viewer | customer_follower | source: 0x14000028e40
+    mysql_permission_repository_test.go:398:   - user-1371 | viewer | manager_chain | source: 0x14000028e90
+    mysql_permission_repository_test.go:398:   - user-1376 | viewer | customer_follower | source: 0x14000028ee0
+    mysql_permission_repository_test.go:398:   - user-1385 | viewer | customer_follower | source: 0x14000028f30
+    mysql_permission_repository_test.go:398:   - user-1388 | viewer | customer_follower | source: 0x14000028f90
+    mysql_permission_repository_test.go:398:   - user-1396 | viewer | customer_follower | source: 0x14000029000
+    mysql_permission_repository_test.go:398:   - user-1397 | viewer | manager_chain | source: 0x14000029080
+    mysql_permission_repository_test.go:398:   - user-140 | viewer | manager_chain | source: 0x140000290f0
+    mysql_permission_repository_test.go:398:   - user-1404 | viewer | customer_follower | source: 0x14000029170
+    mysql_permission_repository_test.go:398:   - user-1412 | viewer | customer_follower | source: 0x140000291e0
+    mysql_permission_repository_test.go:398:   - user-1430 | viewer | customer_follower | source: 0x14000029260
+    mysql_permission_repository_test.go:398:   - user-1436 | viewer | customer_follower | source: 0x140000292d0
+    mysql_permission_repository_test.go:398:   - user-1442 | viewer | customer_follower | source: 0x14000029350
+    mysql_permission_repository_test.go:398:   - user-1445 | viewer | customer_follower | source: 0x140000293c0
+    mysql_permission_repository_test.go:398:   - user-1449 | viewer | customer_follower | source: 0x14000029440
+    mysql_permission_repository_test.go:398:   - user-1456 | viewer | manager_chain | source: 0x140000294b0
+    mysql_permission_repository_test.go:398:   - user-1468 | viewer | customer_follower | source: 0x14000029530
+    mysql_permission_repository_test.go:398:   - user-1470 | viewer | customer_follower | source: 0x140000295a0
+    mysql_permission_repository_test.go:398:   - user-1473 | viewer | manager_chain | source: 0x14000029620
+    mysql_permission_repository_test.go:398:   - user-1474 | viewer | customer_follower | source: 0x14000029670
+    mysql_permission_repository_test.go:398:   - user-1477 | viewer | manager_chain | source: 0x140000296c0
+    mysql_permission_repository_test.go:398:   - user-149 | viewer | customer_follower | source: 0x14000029710
+    mysql_permission_repository_test.go:398:   - user-1492 | viewer | customer_follower | source: 0x14000029760
+    mysql_permission_repository_test.go:398:   - user-1499 | viewer | manager_chain | source: 0x140000297b0
+    mysql_permission_repository_test.go:398:   - user-1505 | viewer | manager_chain | source: 0x14000029800
+    mysql_permission_repository_test.go:398:   - user-1512 | viewer | customer_follower | source: 0x14000029850
+    mysql_permission_repository_test.go:398:   - user-1519 | viewer | customer_follower | source: 0x140000298a0
+    mysql_permission_repository_test.go:398:   - user-1528 | viewer | customer_follower | source: 0x140000298f0
+    mysql_permission_repository_test.go:398:   - user-1535 | viewer | customer_follower | source: 0x14000029940
+    mysql_permission_repository_test.go:398:   - user-1546 | viewer | customer_follower | source: 0x14000029990
+    mysql_permission_repository_test.go:398:   - user-1551 | viewer | customer_follower | source: 0x140000299e0
+    mysql_permission_repository_test.go:398:   - user-1553 | viewer | customer_follower | source: 0x14000029a30
+    mysql_permission_repository_test.go:398:   - user-1577 | viewer | customer_follower | source: 0x14000029a80
+    mysql_permission_repository_test.go:398:   - user-158 | viewer | customer_follower | source: 0x14000029ad0
+    mysql_permission_repository_test.go:398:   - user-1586 | viewer | customer_follower | source: 0x14000029b20
+    mysql_permission_repository_test.go:398:   - user-1587 | viewer | customer_follower | source: 0x14000029b70
+    mysql_permission_repository_test.go:398:   - user-1602 | viewer | manager_chain | source: 0x14000029bd0
+    mysql_permission_repository_test.go:398:   - user-1604 | viewer | customer_follower | source: 0x14000029c40
+    mysql_permission_repository_test.go:398:   - user-1608 | viewer | manager_chain | source: 0x14000029c90
+    mysql_permission_repository_test.go:398:   - user-1618 | viewer | customer_follower | source: 0x14000029ce0
+    mysql_permission_repository_test.go:398:   - user-163 | viewer | customer_follower | source: 0x14000029d30
+    mysql_permission_repository_test.go:398:   - user-1635 | viewer | customer_follower | source: 0x14000029d80
+    mysql_permission_repository_test.go:398:   - user-1664 | viewer | customer_follower | source: 0x14000029dd0
+    mysql_permission_repository_test.go:398:   - user-1669 | viewer | customer_follower | source: 0x14000029e20
+    mysql_permission_repository_test.go:398:   - user-1677 | viewer | manager_chain | source: 0x14000029e70
+    mysql_permission_repository_test.go:398:   - user-1678 | viewer | customer_follower | source: 0x14000029ec0
+    mysql_permission_repository_test.go:398:   - user-1687 | viewer | customer_follower | source: 0x14000029f10
+    mysql_permission_repository_test.go:398:   - user-1695 | viewer | customer_follower | source: 0x14000029f60
+    mysql_permission_repository_test.go:398:   - user-1698 | viewer | manager_chain | source: 0x14000196030
+    mysql_permission_repository_test.go:398:   - user-1702 | viewer | customer_follower | source: 0x14000196080
+    mysql_permission_repository_test.go:398:   - user-1730 | viewer | customer_follower | source: 0x140001960f0
+    mysql_permission_repository_test.go:398:   - user-1737 | viewer | customer_follower | source: 0x14000196150
+    mysql_permission_repository_test.go:398:   - user-1739 | viewer | manager_chain | source: 0x140001961a0
+    mysql_permission_repository_test.go:398:   - user-1742 | viewer | customer_follower | source: 0x140001961f0
+    mysql_permission_repository_test.go:398:   - user-1757 | viewer | customer_follower | source: 0x14000196240
+    mysql_permission_repository_test.go:398:   - user-176 | viewer | customer_follower | source: 0x14000196290
+    mysql_permission_repository_test.go:398:   - user-1763 | viewer | customer_follower | source: 0x140001962e0
+    mysql_permission_repository_test.go:398:   - user-1765 | viewer | customer_follower | source: 0x14000196330
+    mysql_permission_repository_test.go:398:   - user-1767 | viewer | customer_follower | source: 0x14000196380
+    mysql_permission_repository_test.go:398:   - user-1781 | viewer | customer_follower | source: 0x140001963d0
+    mysql_permission_repository_test.go:398:   - user-1788 | viewer | manager_chain | source: 0x14000196420
+    mysql_permission_repository_test.go:398:   - user-179 | viewer | manager_chain | source: 0x14000196470
+    mysql_permission_repository_test.go:398:   - user-1793 | viewer | customer_follower | source: 0x140001964c0
+    mysql_permission_repository_test.go:398:   - user-1809 | viewer | customer_follower | source: 0x14000196510
+    mysql_permission_repository_test.go:398:   - user-1811 | viewer | customer_follower | source: 0x14000196560
+    mysql_permission_repository_test.go:398:   - user-1812 | viewer | customer_follower | source: 0x140001965b0
+    mysql_permission_repository_test.go:398:   - user-1814 | viewer | customer_follower | source: 0x14000196600
+    mysql_permission_repository_test.go:398:   - user-1820 | viewer | manager_chain | source: 0x14000196650
+    mysql_permission_repository_test.go:398:   - user-1821 | viewer | customer_follower | source: 0x140001966a0
+    mysql_permission_repository_test.go:398:   - user-1827 | viewer | customer_follower | source: 0x140001966f0
+    mysql_permission_repository_test.go:398:   - user-1830 | viewer | manager_chain | source: 0x14000196740
+    mysql_permission_repository_test.go:398:   - user-1832 | viewer | customer_follower | source: 0x14000196790
+    mysql_permission_repository_test.go:398:   - user-1835 | viewer | customer_follower | source: 0x140001967e0
+    mysql_permission_repository_test.go:398:   - user-1837 | viewer | customer_follower | source: 0x14000196830
+    mysql_permission_repository_test.go:398:   - user-184 | viewer | manager_chain | source: 0x14000196880
+    mysql_permission_repository_test.go:398:   - user-1846 | viewer | manager_chain | source: 0x140001968d0
+    mysql_permission_repository_test.go:398:   - user-1849 | viewer | manager_chain | source: 0x14000196920
+    mysql_permission_repository_test.go:398:   - user-185 | viewer | customer_follower | source: 0x14000196970
+    mysql_permission_repository_test.go:398:   - user-1851 | viewer | customer_follower | source: 0x140001969c0
+    mysql_permission_repository_test.go:398:   - user-1860 | viewer | customer_follower | source: 0x14000196a10
+    mysql_permission_repository_test.go:398:   - user-1876 | viewer | customer_follower | source: 0x14000196a60
+    mysql_permission_repository_test.go:398:   - user-1879 | viewer | customer_follower | source: 0x14000196ab0
+    mysql_permission_repository_test.go:398:   - user-1884 | viewer | customer_follower | source: 0x14000196b00
+    mysql_permission_repository_test.go:398:   - user-1886 | viewer | customer_follower | source: 0x14000196b50
+    mysql_permission_repository_test.go:398:   - user-1934 | viewer | manager_chain | source: 0x14000196ba0
+    mysql_permission_repository_test.go:398:   - user-1948 | viewer | manager_chain | source: 0x14000196bf0
+    mysql_permission_repository_test.go:398:   - user-1979 | viewer | manager_chain | source: 0x14000196c40
+    mysql_permission_repository_test.go:398:   - user-198 | viewer | manager_chain | source: 0x14000196c90
+    mysql_permission_repository_test.go:398:   - user-199 | viewer | manager_chain | source: 0x14000196ce0
+    mysql_permission_repository_test.go:398:   - user-2 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-2000 | viewer | manager_chain | source: 0x14000196d70
+    mysql_permission_repository_test.go:398:   - user-2029 | viewer | manager_chain | source: 0x14000196dc0
+    mysql_permission_repository_test.go:398:   - user-2049 | viewer | manager_chain | source: 0x14000196e10
+    mysql_permission_repository_test.go:398:   - user-2082 | viewer | manager_chain | source: 0x14000196e60
+    mysql_permission_repository_test.go:398:   - user-2153 | viewer | manager_chain | source: 0x14000196eb0
+    mysql_permission_repository_test.go:398:   - user-2173 | viewer | manager_chain | source: 0x14000196f00
+    mysql_permission_repository_test.go:398:   - user-2217 | viewer | manager_chain | source: 0x14000196f50
+    mysql_permission_repository_test.go:398:   - user-2225 | viewer | manager_chain | source: 0x14000196fa0
+    mysql_permission_repository_test.go:398:   - user-2230 | viewer | manager_chain | source: 0x14000196ff0
+    mysql_permission_repository_test.go:398:   - user-2295 | viewer | manager_chain | source: 0x14000197040
+    mysql_permission_repository_test.go:398:   - user-2308 | viewer | manager_chain | source: 0x140001970b0
+    mysql_permission_repository_test.go:398:   - user-2324 | viewer | manager_chain | source: 0x14000197110
+    mysql_permission_repository_test.go:398:   - user-2369 | viewer | manager_chain | source: 0x14000197160
+    mysql_permission_repository_test.go:398:   - user-2380 | viewer | manager_chain | source: 0x140001971b0
+    mysql_permission_repository_test.go:398:   - user-2383 | viewer | manager_chain | source: 0x14000197200
+    mysql_permission_repository_test.go:398:   - user-2386 | viewer | manager_chain | source: 0x14000197250
+    mysql_permission_repository_test.go:398:   - user-2400 | viewer | manager_chain | source: 0x140001972a0
+    mysql_permission_repository_test.go:398:   - user-2411 | viewer | manager_chain | source: 0x140001972f0
+    mysql_permission_repository_test.go:398:   - user-2454 | viewer | manager_chain | source: 0x14000197340
+    mysql_permission_repository_test.go:398:   - user-2497 | viewer | manager_chain | source: 0x14000197390
+    mysql_permission_repository_test.go:398:   - user-2499 | viewer | manager_chain | source: 0x140001973f0
+    mysql_permission_repository_test.go:398:   - user-2511 | viewer | manager_chain | source: 0x14000197440
+    mysql_permission_repository_test.go:398:   - user-2530 | viewer | manager_chain | source: 0x140001974c0
+    mysql_permission_repository_test.go:398:   - user-2531 | viewer | manager_chain | source: 0x14000197520
+    mysql_permission_repository_test.go:398:   - user-2556 | viewer | manager_chain | source: 0x14000197570
+    mysql_permission_repository_test.go:398:   - user-2583 | viewer | manager_chain | source: 0x140001975c0
+    mysql_permission_repository_test.go:398:   - user-2595 | viewer | manager_chain | source: 0x14000197610
+    mysql_permission_repository_test.go:398:   - user-2607 | viewer | manager_chain | source: 0x14000197660
+    mysql_permission_repository_test.go:398:   - user-2633 | viewer | manager_chain | source: 0x140001976b0
+    mysql_permission_repository_test.go:398:   - user-2667 | viewer | manager_chain | source: 0x14000197710
+    mysql_permission_repository_test.go:398:   - user-2735 | viewer | manager_chain | source: 0x140001977c0
+    mysql_permission_repository_test.go:398:   - user-274 | viewer | manager_chain | source: 0x14000197810
+    mysql_permission_repository_test.go:398:   - user-2865 | viewer | manager_chain | source: 0x14000197920
+    mysql_permission_repository_test.go:398:   - user-287 | viewer | manager_chain | source: 0x14000197b00
+    mysql_permission_repository_test.go:398:   - user-2899 | viewer | manager_chain | source: 0x14000197b50
+    mysql_permission_repository_test.go:398:   - user-2908 | viewer | manager_chain | source: 0x14000197bd0
+    mysql_permission_repository_test.go:398:   - user-2946 | viewer | manager_chain | source: 0x14000197c60
+    mysql_permission_repository_test.go:398:   - user-2975 | viewer | manager_chain | source: 0x14000197cb0
+    mysql_permission_repository_test.go:398:   - user-2983 | viewer | manager_chain | source: 0x14000197d00
+    mysql_permission_repository_test.go:398:   - user-2987 | viewer | manager_chain | source: 0x14000197d50
+    mysql_permission_repository_test.go:398:   - user-3 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-30 | viewer | manager_chain | source: 0x14000197de0
+    mysql_permission_repository_test.go:398:   - user-3012 | viewer | manager_chain | source: 0x14000197e30
+    mysql_permission_repository_test.go:398:   - user-3043 | viewer | manager_chain | source: 0x14000197e80
+    mysql_permission_repository_test.go:398:   - user-3051 | viewer | manager_chain | source: 0x14000197ed0
+    mysql_permission_repository_test.go:398:   - user-3074 | viewer | manager_chain | source: 0x14000197f20
+    mysql_permission_repository_test.go:398:   - user-31 | viewer | manager_chain | source: 0x14000197f70
+    mysql_permission_repository_test.go:398:   - user-3109 | viewer | manager_chain | source: 0x140002a0040
+    mysql_permission_repository_test.go:398:   - user-3119 | viewer | manager_chain | source: 0x140002a0090
+    mysql_permission_repository_test.go:398:   - user-3122 | viewer | manager_chain | source: 0x140002a00e0
+    mysql_permission_repository_test.go:398:   - user-313 | viewer | manager_chain | source: 0x140002a0130
+    mysql_permission_repository_test.go:398:   - user-3130 | viewer | manager_chain | source: 0x140002a0180
+    mysql_permission_repository_test.go:398:   - user-3174 | viewer | manager_chain | source: 0x140002a01d0
+    mysql_permission_repository_test.go:398:   - user-3204 | viewer | manager_chain | source: 0x140002a0220
+    mysql_permission_repository_test.go:398:   - user-3270 | viewer | manager_chain | source: 0x140002a0270
+    mysql_permission_repository_test.go:398:   - user-3276 | viewer | manager_chain | source: 0x140002a02c0
+    mysql_permission_repository_test.go:398:   - user-3280 | viewer | manager_chain | source: 0x140002a0310
+    mysql_permission_repository_test.go:398:   - user-330 | viewer | manager_chain | source: 0x140002a0360
+    mysql_permission_repository_test.go:398:   - user-3309 | viewer | manager_chain | source: 0x140002a03f0
+    mysql_permission_repository_test.go:398:   - user-3322 | viewer | manager_chain | source: 0x140002a0480
+    mysql_permission_repository_test.go:398:   - user-3326 | viewer | manager_chain | source: 0x140002a0530
+    mysql_permission_repository_test.go:398:   - user-3355 | viewer | manager_chain | source: 0x140002a05f0
+    mysql_permission_repository_test.go:398:   - user-3437 | viewer | manager_chain | source: 0x140002a07a0
+    mysql_permission_repository_test.go:398:   - user-3447 | viewer | manager_chain | source: 0x140002a0830
+    mysql_permission_repository_test.go:398:   - user-3488 | viewer | manager_chain | source: 0x140002a08b0
+    mysql_permission_repository_test.go:398:   - user-3493 | viewer | manager_chain | source: 0x140002a0940
+    mysql_permission_repository_test.go:398:   - user-3508 | viewer | manager_chain | source: 0x140002a09f0
+    mysql_permission_repository_test.go:398:   - user-3547 | viewer | manager_chain | source: 0x140002a0ac0
+    mysql_permission_repository_test.go:398:   - user-3622 | viewer | manager_chain | source: 0x140002a0c70
+    mysql_permission_repository_test.go:398:   - user-3629 | viewer | manager_chain | source: 0x140002a0cd0
+    mysql_permission_repository_test.go:398:   - user-3633 | viewer | manager_chain | source: 0x140002a0d80
+    mysql_permission_repository_test.go:398:   - user-3663 | viewer | manager_chain | source: 0x140002a0e10
+    mysql_permission_repository_test.go:398:   - user-3697 | viewer | manager_chain | source: 0x140002a0ec0
+    mysql_permission_repository_test.go:398:   - user-3717 | viewer | manager_chain | source: 0x140002a1020
+    mysql_permission_repository_test.go:398:   - user-3780 | viewer | manager_chain | source: 0x140002a10b0
+    mysql_permission_repository_test.go:398:   - user-3808 | viewer | manager_chain | source: 0x140002a1140
+    mysql_permission_repository_test.go:398:   - user-3827 | viewer | manager_chain | source: 0x140002a11d0
+    mysql_permission_repository_test.go:398:   - user-3860 | viewer | manager_chain | source: 0x140002a1240
+    mysql_permission_repository_test.go:398:   - user-3869 | viewer | manager_chain | source: 0x140002a12f0
+    mysql_permission_repository_test.go:398:   - user-3872 | viewer | manager_chain | source: 0x140002a1490
+    mysql_permission_repository_test.go:398:   - user-3882 | viewer | manager_chain | source: 0x140002a14f0
+    mysql_permission_repository_test.go:398:   - user-3887 | viewer | manager_chain | source: 0x140002a1580
+    mysql_permission_repository_test.go:398:   - user-3910 | viewer | manager_chain | source: 0x140002a1610
+    mysql_permission_repository_test.go:398:   - user-3912 | viewer | manager_chain | source: 0x140002a1770
+    mysql_permission_repository_test.go:398:   - user-3917 | viewer | manager_chain | source: 0x140002a17e0
+    mysql_permission_repository_test.go:398:   - user-3921 | viewer | manager_chain | source: 0x140002a1870
+    mysql_permission_repository_test.go:398:   - user-395 | viewer | manager_chain | source: 0x140002a1900
+    mysql_permission_repository_test.go:398:   - user-3995 | viewer | manager_chain | source: 0x140002a1a00
+    mysql_permission_repository_test.go:398:   - user-4 | viewer | manager_chain | source: 0x140002a1ad0
+    mysql_permission_repository_test.go:398:   - user-4041 | viewer | manager_chain | source: 0x140002a1b20
+    mysql_permission_repository_test.go:398:   - user-4052 | viewer | manager_chain | source: 0x140002a1b70
+    mysql_permission_repository_test.go:398:   - user-4064 | viewer | manager_chain | source: 0x140002a1bc0
+    mysql_permission_repository_test.go:398:   - user-4117 | viewer | manager_chain | source: 0x140002a1c10
+    mysql_permission_repository_test.go:398:   - user-4132 | viewer | manager_chain | source: 0x140002a1c60
+    mysql_permission_repository_test.go:398:   - user-4142 | viewer | manager_chain | source: 0x140002a1cb0
+    mysql_permission_repository_test.go:398:   - user-4178 | viewer | manager_chain | source: 0x140002a1d00
+    mysql_permission_repository_test.go:398:   - user-4187 | viewer | manager_chain | source: 0x140002a1d50
+    mysql_permission_repository_test.go:398:   - user-4226 | viewer | manager_chain | source: 0x140002a1da0
+    mysql_permission_repository_test.go:398:   - user-4234 | viewer | manager_chain | source: 0x140002a1df0
+    mysql_permission_repository_test.go:398:   - user-4244 | viewer | manager_chain | source: 0x140002a1e40
+    mysql_permission_repository_test.go:398:   - user-4247 | viewer | manager_chain | source: 0x140002a1e90
+    mysql_permission_repository_test.go:398:   - user-4256 | viewer | manager_chain | source: 0x140002a1ee0
+    mysql_permission_repository_test.go:398:   - user-4260 | viewer | manager_chain | source: 0x140002a1f30
+    mysql_permission_repository_test.go:398:   - user-427 | viewer | manager_chain | source: 0x140002ca000
+    mysql_permission_repository_test.go:398:   - user-4290 | viewer | manager_chain | source: 0x140002ca050
+    mysql_permission_repository_test.go:398:   - user-4313 | viewer | manager_chain | source: 0x140002ca0a0
+    mysql_permission_repository_test.go:398:   - user-4327 | viewer | manager_chain | source: 0x140002ca0f0
+    mysql_permission_repository_test.go:398:   - user-4426 | viewer | manager_chain | source: 0x140002ca180
+    mysql_permission_repository_test.go:398:   - user-4440 | viewer | manager_chain | source: 0x140002ca210
+    mysql_permission_repository_test.go:398:   - user-4480 | viewer | manager_chain | source: 0x140002ca2c0
+    mysql_permission_repository_test.go:398:   - user-4513 | viewer | manager_chain | source: 0x140002ca420
+    mysql_permission_repository_test.go:398:   - user-4574 | viewer | manager_chain | source: 0x140002ca490
+    mysql_permission_repository_test.go:398:   - user-4586 | viewer | manager_chain | source: 0x140002ca4f0
+    mysql_permission_repository_test.go:398:   - user-4587 | viewer | manager_chain | source: 0x140002ca540
+    mysql_permission_repository_test.go:398:   - user-4651 | viewer | manager_chain | source: 0x140002ca590
+    mysql_permission_repository_test.go:398:   - user-4669 | viewer | manager_chain | source: 0x140002ca5e0
+    mysql_permission_repository_test.go:398:   - user-4676 | viewer | manager_chain | source: 0x140002ca630
+    mysql_permission_repository_test.go:398:   - user-470 | viewer | manager_chain | source: 0x140002ca680
+    mysql_permission_repository_test.go:398:   - user-4738 | viewer | manager_chain | source: 0x140002ca6d0
+    mysql_permission_repository_test.go:398:   - user-4753 | viewer | manager_chain | source: 0x140002ca720
+    mysql_permission_repository_test.go:398:   - user-4785 | viewer | manager_chain | source: 0x140002ca770
+    mysql_permission_repository_test.go:398:   - user-4805 | viewer | manager_chain | source: 0x140002ca7c0
+    mysql_permission_repository_test.go:398:   - user-4830 | viewer | manager_chain | source: 0x140002ca810
+    mysql_permission_repository_test.go:398:   - user-4850 | viewer | manager_chain | source: 0x140002ca860
+    mysql_permission_repository_test.go:398:   - user-4853 | viewer | manager_chain | source: 0x140002ca8b0
+    mysql_permission_repository_test.go:398:   - user-4856 | viewer | manager_chain | source: 0x140002ca900
+    mysql_permission_repository_test.go:398:   - user-4870 | viewer | manager_chain | source: 0x140002ca950
+    mysql_permission_repository_test.go:398:   - user-4892 | viewer | manager_chain | source: 0x140002ca9a0
+    mysql_permission_repository_test.go:398:   - user-4912 | viewer | manager_chain | source: 0x140002ca9f0
+    mysql_permission_repository_test.go:398:   - user-4913 | viewer | manager_chain | source: 0x140002caa40
+    mysql_permission_repository_test.go:398:   - user-493 | viewer | manager_chain | source: 0x140002caa90
+    mysql_permission_repository_test.go:398:   - user-498 | viewer | manager_chain | source: 0x140002caae0
+    mysql_permission_repository_test.go:398:   - user-4995 | viewer | manager_chain | source: 0x140002cab30
+    mysql_permission_repository_test.go:398:   - user-4998 | viewer | manager_chain | source: 0x140002cab80
+    mysql_permission_repository_test.go:398:   - user-5 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-538 | viewer | manager_chain | source: 0x140002cac10
+    mysql_permission_repository_test.go:398:   - user-595 | viewer | manager_chain | source: 0x140002cac60
+    mysql_permission_repository_test.go:398:   - user-6 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-627 | viewer | manager_chain | source: 0x140002cacf0
+    mysql_permission_repository_test.go:398:   - user-628 | viewer | manager_chain | source: 0x140002cad40
+    mysql_permission_repository_test.go:398:   - user-665 | viewer | manager_chain | source: 0x140002cad90
+    mysql_permission_repository_test.go:398:   - user-678 | viewer | manager_chain | source: 0x140002cade0
+    mysql_permission_repository_test.go:398:   - user-680 | viewer | manager_chain | source: 0x140002cae30
+    mysql_permission_repository_test.go:398:   - user-692 | viewer | manager_chain | source: 0x140002cae80
+    mysql_permission_repository_test.go:398:   - user-7 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-70 | viewer | manager_chain | source: 0x140002caf10
+    mysql_permission_repository_test.go:398:   - user-714 | viewer | manager_chain | source: 0x140002caf60
+    mysql_permission_repository_test.go:398:   - user-726 | viewer | manager_chain | source: 0x140002cafb0
+    mysql_permission_repository_test.go:398:   - user-739 | viewer | manager_chain | source: 0x140002cb000
+    mysql_permission_repository_test.go:398:   - user-749 | viewer | manager_chain | source: 0x140002cb050
+    mysql_permission_repository_test.go:398:   - user-781 | viewer | manager_chain | source: 0x140002cb0a0
+    mysql_permission_repository_test.go:398:   - user-782 | viewer | manager_chain | source: 0x140002cb0f0
+    mysql_permission_repository_test.go:398:   - user-789 | viewer | manager_chain | source: 0x140002cb140
+    mysql_permission_repository_test.go:398:   - user-8 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-817 | viewer | manager_chain | source: 0x140002cb1d0
+    mysql_permission_repository_test.go:398:   - user-9 | viewer | superuser | source: <nil>
+    mysql_permission_repository_test.go:398:   - user-920 | viewer | manager_chain | source: 0x140002cb260
+    mysql_permission_repository_test.go:398:   - user-934 | viewer | manager_chain | source: 0x140002cb2b0
+    mysql_permission_repository_test.go:398:   - user-948 | viewer | manager_chain | source: 0x140002cb300
+    mysql_permission_repository_test.go:398:   - user-959 | viewer | manager_chain | source: 0x140002cb350
+    mysql_permission_repository_test.go:398:   - user-96 | viewer | manager_chain | source: 0x140002cb3b0
+    mysql_permission_repository_test.go:398:   - user-988 | viewer | manager_chain | source: 0x140002cb400
+    mysql_permission_repository_test.go:436: ✅ Test passed! All permission sources verified correctly.
+--- PASS: TestAddDocumentPermissionsComplete (55.31s)
+PASS
+ok  	github.com/d60-Lab/gin-template/internal/repository	55.520s

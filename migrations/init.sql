@@ -1,7 +1,7 @@
 -- 创建数据库
-CREATE DATABASE gin_template;
+CREATE DATABASE zanzibar_permission;
 -- 连接到数据库
-\ c gin_template;
+\ c zanzibar_permission;
 -- 用户表会由 GORM 自动创建，这里是参考结构
 -- CREATE TABLE users (
 --     id VARCHAR(36) PRIMARY KEY,

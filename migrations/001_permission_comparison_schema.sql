@@ -6,6 +6,9 @@
 -- tuple-based permissions.
 -- =====================================================
 
+-- Disable foreign key checks during table creation
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- =====================================================
 -- SHARED BUSINESS TABLES
 -- =====================================================
@@ -20,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Departments table (hierarchical, ~2,000 departments expected)
 CREATE TABLE IF NOT EXISTS departments (
@@ -34,7 +37,7 @@ CREATE TABLE IF NOT EXISTS departments (
     INDEX idx_parent (parent_id),
     INDEX idx_level (level),
     INDEX idx_manager (manager_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- User-Department relationships (multi-department support)
 CREATE TABLE IF NOT EXISTS user_departments (
@@ -49,7 +52,7 @@ CREATE TABLE IF NOT EXISTS user_departments (
     INDEX idx_department (department_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Management relations (pre-computed management paths)
 CREATE TABLE IF NOT EXISTS management_relations (
@@ -66,7 +69,7 @@ CREATE TABLE IF NOT EXISTS management_relations (
     FOREIGN KEY (manager_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (subordinate_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Customers table (100,000 records expected)
 CREATE TABLE IF NOT EXISTS customers (
@@ -75,7 +78,7 @@ CREATE TABLE IF NOT EXISTS customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Documents table (~500,000 records expected)
 CREATE TABLE IF NOT EXISTS documents (
@@ -90,7 +93,7 @@ CREATE TABLE IF NOT EXISTS documents (
     INDEX idx_creator (creator_id),
     FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
     FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Customer followers (1-10 followers per customer)
 CREATE TABLE IF NOT EXISTS customer_followers (
@@ -101,7 +104,7 @@ CREATE TABLE IF NOT EXISTS customer_followers (
     INDEX idx_user (user_id),
     FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================
 -- MYSQL-ONLY: EXPANDED PERMISSION TABLE
@@ -129,7 +132,7 @@ CREATE TABLE IF NOT EXISTS document_permissions_mysql (
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================
 -- ZANZIBAR-STYLE: RELATION TUPLES
@@ -164,7 +167,7 @@ CREATE TABLE IF NOT EXISTS relation_tuples (
     INDEX idx_subject (subject_namespace, subject_id, relation),
     INDEX idx_computed (userset_namespace, userset_relation),
     INDEX idx_namespace_object (namespace, object_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================
 -- INDEXES FOR PERFORMANCE
@@ -202,7 +205,7 @@ CREATE TABLE IF NOT EXISTS benchmark_logs (
     INDEX idx_engine (engine_type),
     INDEX idx_operation (operation_type),
     INDEX idx_created (created_at)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- System resource usage during benchmarks
 CREATE TABLE IF NOT EXISTS benchmark_metrics (
@@ -216,7 +219,7 @@ CREATE TABLE IF NOT EXISTS benchmark_metrics (
     INDEX idx_benchmark_id (benchmark_id),
     INDEX idx_metric_type (metric_type),
     FOREIGN KEY (benchmark_id) REFERENCES benchmark_logs(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================
 -- VIEWS FOR EASY DATA INSPECTION
@@ -302,5 +305,26 @@ WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'relation_tuples';
 -- ('customer', 'customer-1', 'follower', 'user', 'user-3');
 
 -- =====================================================
+-- DOCUMENT READ TRACKING
+-- =====================================================
+
+-- Document read status table
+CREATE TABLE IF NOT EXISTS document_reads (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(36) NOT NULL,
+    document_id VARCHAR(36) NOT NULL,
+    read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_doc (user_id, document_id),
+    INDEX idx_user (user_id),
+    INDEX idx_document (document_id),
+    INDEX idx_read_at (read_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =====================================================
 -- END OF MIGRATION
 -- =====================================================
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;

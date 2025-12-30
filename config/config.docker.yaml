@@ -8,7 +8,7 @@ database:
   driver: postgres
   host: postgres # Docker容器服务名
   port: 5432
-  database: gin_template
+  database: zanzibar_permission
   username: postgres
   password: postgres # pragma: allowlist secret - 生产环境建议使用环境变量 ${DB_PASSWORD}
   max_open_conns: 25
