@@ -154,8 +154,9 @@ func (r *ZanzibarPermissionRepository) checkCustomerFollowerPermission(ctx conte
 
 // checkManagerChainPermission checks if user has permission through manager chain
 // Business logic (OR/Union of two conditions):
-//   1. User manages any customer follower who has access to the document
-//   2. User manages the document creator
+//  1. User manages any customer follower who has access to the document
+//  2. User manages the document creator
+//
 // Either condition being true grants permission.
 func (r *ZanzibarPermissionRepository) checkManagerChainPermission(ctx context.Context, userID, documentID, permissionType string, sources *model.PermissionSourceList) (bool, error) {
 	// Condition 1: Check if user manages any customer follower
@@ -227,7 +228,7 @@ func (r *ZanzibarPermissionRepository) checkManagerChainPermission(ctx context.C
 // We do: "find all my subordinates, check if any of them have access to this document" (fast)
 func (r *ZanzibarPermissionRepository) checkManagerChainPermissionOptimized(ctx context.Context, userID, documentID, permissionType string, sources *model.PermissionSourceList) (bool, error) {
 	// Step 1: Get all subordinates of the current user (batch query)
-	subordinateIDs, err := r.getAllSubordinates(ctx, userID, make(map[string]bool), 0, 5)
+	subordinateIDs, err := r.getAllSubordinates(ctx, userID, 5)
 	if err != nil {
 		return false, err
 	}
@@ -347,13 +348,107 @@ func (r *ZanzibarPermissionRepository) checkSuperuserPermission(ctx context.Cont
 // CheckPermissionsBatch checks permissions for multiple documents
 func (r *ZanzibarPermissionRepository) CheckPermissionsBatch(ctx context.Context, userID string, documentIDs []string, permissionType string) (map[string]bool, error) {
 	result := make(map[string]bool)
-
 	for _, docID := range documentIDs {
-		checkResult, err := r.CheckPermission(ctx, userID, docID, permissionType)
+		result[docID] = false
+	}
+
+	if len(documentIDs) == 0 {
+		return result, nil
+	}
+
+	// Path 1: Superuser check
+	isSuperuser, err := r.checkSuperuserPermission(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if isSuperuser {
+		for _, docID := range documentIDs {
+			result[docID] = true
+		}
+		return result, nil
+	}
+
+	// Path 2: Direct permissions
+	var directDocIDs []string
+	err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+		Where("namespace = ? AND object_id IN ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"document", documentIDs, permissionType, "user", userID).
+		Pluck("object_id", &directDocIDs).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, docID := range directDocIDs {
+		result[docID] = true
+	}
+
+	// Path 3: Customer follower permissions
+	// 3.1 Find customers user follows
+	var followedCustomerIDs []string
+	err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+		Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
+			"customer", "follower", "user", userID).
+		Pluck("object_id", &followedCustomerIDs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if len(followedCustomerIDs) > 0 {
+		var customerDocIDs []string
+		err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+			Where("namespace = ? AND object_id IN ? AND relation = ? AND subject_id IN ?",
+				"document", documentIDs, "owner_customer", followedCustomerIDs).
+			Pluck("object_id", &customerDocIDs).Error
 		if err != nil {
 			return nil, err
 		}
-		result[docID] = checkResult.HasPermission
+		for _, docID := range customerDocIDs {
+			result[docID] = true
+		}
+	}
+
+	// Path 4: Manager chain permissions
+	subordinateIDs, err := r.getAllSubordinates(ctx, userID, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(subordinateIDs) > 0 {
+		// 4.1 Subordinate is owner
+		var subOwnerDocIDs []string
+		err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+			Where("namespace = ? AND object_id IN ? AND relation = ? AND subject_namespace = ? AND subject_id IN ?",
+				"document", documentIDs, "owner", "user", subordinateIDs).
+			Pluck("object_id", &subOwnerDocIDs).Error
+		if err != nil {
+			return nil, err
+		}
+		for _, docID := range subOwnerDocIDs {
+			result[docID] = true
+		}
+
+		// 4.2 Subordinate follows owner customer
+		var subFollowedCustomerIDs []string
+		err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+			Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id IN ?",
+				"customer", "follower", "user", subordinateIDs).
+			Pluck("object_id", &subFollowedCustomerIDs).Error
+		if err != nil {
+			return nil, err
+		}
+
+		if len(subFollowedCustomerIDs) > 0 {
+			var subCustomerDocIDs []string
+			err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+				Where("namespace = ? AND object_id IN ? AND relation = ? AND subject_id IN ?",
+					"document", documentIDs, "owner_customer", subFollowedCustomerIDs).
+				Pluck("object_id", &subCustomerDocIDs).Error
+			if err != nil {
+				return nil, err
+			}
+			for _, docID := range subCustomerDocIDs {
+				result[docID] = true
+			}
+		}
 	}
 
 	return result, nil
@@ -450,7 +545,7 @@ func (r *ZanzibarPermissionRepository) GetUserDocuments(ctx context.Context, use
 
 	// Path 3: Manager chain permissions (documents accessible by subordinates)
 	// Find all subordinates
-	subordinateIDs, err := r.getAllSubordinates(ctx, userID, make(map[string]bool), 0, 5)
+	subordinateIDs, err := r.getAllSubordinates(ctx, userID, 5)
 	if err != nil {
 		return nil, err
 	}
@@ -544,68 +639,65 @@ func (r *ZanzibarPermissionRepository) GetUserDocuments(ctx context.Context, use
 	duration := time.Since(startTime).Milliseconds()
 
 	return &model.UserDocumentList{
-		Documents: documentItems,
-		Total:     total,
-		Page:      page,
-		PageSize:  pageSize,
+		Documents:  documentItems,
+		Total:      total,
+		Page:       page,
+		PageSize:   pageSize,
 		DurationMs: float64(duration),
 	}, nil
 }
 
-// getAllSubordinates recursively gets all subordinates of a manager using RelationTuple
+// getAllSubordinates gets all subordinates of a manager using RelationTuple with BFS to avoid N+1 queries
 // This implements the Zanzibar way: department#manager manages department#member
-func (r *ZanzibarPermissionRepository) getAllSubordinates(ctx context.Context, managerUserID string, visited map[string]bool, currentDepth, maxDepth int) ([]string, error) {
-	if currentDepth > maxDepth {
-		return []string{}, nil
-	}
+func (r *ZanzibarPermissionRepository) getAllSubordinates(ctx context.Context, managerUserID string, maxDepth int) ([]string, error) {
+	allSubordinateIDs := make([]string, 0)
+	visited := map[string]bool{managerUserID: true}
+	currentManagers := []string{managerUserID}
 
-	var subordinateIDs []string
+	for depth := 0; depth < maxDepth; depth++ {
+		if len(currentManagers) == 0 {
+			break
+		}
 
-	// Step 1: Find all departments where this user is the manager
-	// Query: department:*#manager@user:managerUserID
-	var managerTuples []model.RelationTuple
-	err := r.db.WithContext(ctx).
-		Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id = ?",
-			"department", "manager", "user", managerUserID).
-		Find(&managerTuples).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Step 2: For each managed department, find all members
-	for _, managerTuple := range managerTuples {
-		departmentID := managerTuple.ObjectID
-
-		// Query: department:departmentID#member@user:*
-		var memberTuples []model.RelationTuple
-		err := r.db.WithContext(ctx).
-			Where("namespace = ? AND object_id = ? AND relation = ? AND subject_namespace = ?",
-				"department", departmentID, "member", "user").
-			Find(&memberTuples).Error
+		// Step 1: Find all departments where these users are managers
+		var managedDeptIDs []string
+		err := r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+			Where("namespace = ? AND relation = ? AND subject_namespace = ? AND subject_id IN ?",
+				"department", "manager", "user", currentManagers).
+			Pluck("object_id", &managedDeptIDs).Error
 
 		if err != nil {
 			return nil, err
 		}
 
-		for _, memberTuple := range memberTuples {
-			subordinateID := memberTuple.SubjectID
+		if len(managedDeptIDs) == 0 {
+			break
+		}
 
-			if !visited[subordinateID] {
-				visited[subordinateID] = true
-				subordinateIDs = append(subordinateIDs, subordinateID)
+		// Step 2: Find all members of these departments
+		var memberIDs []string
+		err = r.db.WithContext(ctx).Model(&model.RelationTuple{}).
+			Where("namespace = ? AND object_id IN ? AND relation = ? AND subject_namespace = ?",
+				"department", managedDeptIDs, "member", "user").
+			Pluck("subject_id", &memberIDs).Error
 
-				// Recursively get subordinates' subordinates
-				nestedSubordinates, err := r.getAllSubordinates(ctx, subordinateID, visited, currentDepth+1, maxDepth)
-				if err != nil {
-					return nil, err
-				}
-				subordinateIDs = append(subordinateIDs, nestedSubordinates...)
+		if err != nil {
+			return nil, err
+		}
+
+		// Step 3: Filter out already visited members and prepare for next level
+		nextManagers := make([]string, 0)
+		for _, id := range memberIDs {
+			if !visited[id] {
+				visited[id] = true
+				allSubordinateIDs = append(allSubordinateIDs, id)
+				nextManagers = append(nextManagers, id)
 			}
 		}
+		currentManagers = nextManagers
 	}
 
-	return subordinateIDs, nil
+	return allSubordinateIDs, nil
 }
 
 // hasDirectPermission helper for GetUserDocuments
